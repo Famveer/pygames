@@ -1,0 +1,6 @@
+# Curso de Desarrollo de Juegos con Pygame
+# Compatible con Python 3.10 / 3.11 / 3.12
+# Instalar con: pip install -r requirements.txt
+
+pygame==2.6.1
+jupyter
