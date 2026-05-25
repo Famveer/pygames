@@ -1,19 +1,19 @@
 ---
-title: Lec1
+title: Lec3
 parent: Lectures
-nav_order: 1
+nav_order: 3
 layout: default
 ---
 
-# Lecture 1: Introduction to Git
+# Lecture 3: Introduction to Sprites y colisiones
 {: .no_toc }
 
 {: .summary}
 >In this lecture, we will learn:
 >
->* Git
->* Create a repository
->* Commits, push, pulls
+>* Sprites
+>* Collisions
+>* Animations
 
 
 ### Slides

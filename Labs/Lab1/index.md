@@ -11,7 +11,7 @@ Here, we have some pygame code samples.
 
 ### Files
 
-* [estructura basica](./files/01_estructura_basica.py)
-* [fps y clock](./files/02_fps_y_clock.py)
-* [eventos e input](./files/03_eventos_input.py)
-* [keydowns](./files/04_keydown_vs_getpressed.py)
+* [Estructura basica](./files/01_estructura_basica.py)
+* [FPS y clock](./files/02_fps_y_clock.py)
+* [Eventos e input](./files/03_eventos_input.py)
+* [Special keys](./files/04_keydown_vs_getpressed.py)

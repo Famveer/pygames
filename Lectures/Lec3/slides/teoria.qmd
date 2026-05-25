@@ -1,0 +1,633 @@
+---
+title: "🎮 Modules 2, 3 & 4 — Sprites, Collisions and Animations"
+subtitle: "Pygame Game Development Course"
+author: "Pygame Course"
+date: today
+lang: en
+format:
+  html:
+    theme: darkly
+    toc: true
+    toc-depth: 3
+    toc-title: "Table of Contents"
+    number-sections: true
+    code-fold: false
+    code-tools: true
+    highlight-style: dracula
+    self-contained: true
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: true
+    geometry: margin=2.5cm
+jupyter: python3
+---
+
+::: {.callout-note}
+In these modules you will learn:
+
+- **Module 2:** What a Sprite is, the `pygame.sprite.Sprite` class, groups, and transparency
+- **Module 3:** `pygame.Rect` in depth, collision types, and collision response
+- **Module 4:** Frame-based animation, spritesheets, and the animation state machine
+:::
+
+---
+
+# 📦 MODULE 2 — Sprites & Images
+
+## What is a Sprite?
+
+In game development, a **sprite** is any visual object in the game: the player, an enemy, a bullet, a pickup item. The term comes from the graphics chips of the 1980s that handled independent 2D objects on top of a background.
+
+In Pygame, `pygame.sprite.Sprite` is a base class that gives you structure to manage game objects in an organized way. Each sprite has two mandatory attributes:
+
+- **`self.image`** → the visual surface (the drawing)
+- **`self.rect`** → the rectangle that defines position and size
+
+```
+ self.image            self.rect
+ ┌──────────┐          ┌──────────┐
+ │  pixels  │          │ x, y     │  ← position on screen
+ │  (Surface│          │ w, h     │  ← width and height
+ │   2D)    │          │ center   │  ← and many helper props
+ └──────────┘          └──────────┘
+```
+
+## Anatomy of a Sprite
+
+```python
+class Player(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()           # MANDATORY: call the parent __init__
+
+        # image: Surface with the drawing
+        self.image = pygame.Surface((48, 48))
+        self.image.fill((50, 120, 220))   # Solid blue
+
+        # rect: position and size on screen
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)   # Place on screen
+
+        # Game-specific attributes
+        self.speed = 4
+
+    def update(self):                # Called by the group every frame
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:  self.rect.x -= self.speed
+        if keys[pygame.K_RIGHT]: self.rect.x += self.speed
+```
+
+### Why use Sprite instead of loose variables?
+
+| Without Sprite | With Sprite |
+|----------------|-------------|
+| `player_x`, `player_y`, `player_img`... | `player.rect.x`, `player.image` |
+| Logic scattered all over the code | Encapsulated in the class |
+| Complicated manual collisions | Automatic `spritecollide()` |
+| Drawing object by object | `group.draw(screen)` |
+
+## Rect Properties
+
+```{python}
+# Simulating Sprite attributes (without pygame)
+
+class SimulatedRect:
+    """Simulates the main attributes of pygame.Rect"""
+    def __init__(self, x, y, w, h):
+        self.x, self.y = x, y
+        self.width, self.height = w, h
+
+    @property
+    def center(self): return (self.x + self.width//2, self.y + self.height//2)
+    @property
+    def topleft(self): return (self.x, self.y)
+    @property
+    def topright(self): return (self.x + self.width, self.y)
+    @property
+    def bottomleft(self): return (self.x, self.y + self.height)
+    @property
+    def right(self): return self.x + self.width
+    @property
+    def bottom(self): return self.y + self.height
+    @property
+    def centerx(self): return self.x + self.width // 2
+    @property
+    def centery(self): return self.y + self.height // 2
+
+rect = SimulatedRect(100, 50, 48, 48)
+
+print("pygame.Rect properties:")
+print(f"  rect.x, rect.y      = {rect.x}, {rect.y}        ← top-left corner")
+print(f"  rect.width, height  = {rect.width}, {rect.height}       ← size")
+print(f"  rect.center         = {rect.center}   ← center point")
+print(f"  rect.topleft        = {rect.topleft}  ← alias for (x, y)")
+print(f"  rect.topright       = {rect.topright} ← top-right corner")
+print(f"  rect.bottomleft     = {rect.bottomleft} ← bottom-left corner")
+print(f"  rect.right          = {rect.right}       ← right edge")
+print(f"  rect.bottom         = {rect.bottom}       ← bottom edge")
+print()
+print("Move by assigning to any property:")
+print("  rect.center = (400, 300)  → centers the sprite")
+print("  rect.topright = (800, 0)  → top-right corner of the screen")
+```
+
+## Sprite Groups
+
+A `pygame.sprite.Group` is a collection of sprites with built-in superpowers:
+
+```python
+all_sprites = pygame.sprite.Group()    # General group
+bullets     = pygame.sprite.Group()    # Specific group
+enemies     = pygame.sprite.Group()
+
+# Adding sprites
+player = Player(400, 300)
+all_sprites.add(player)
+bullets.add(Bullet(400, 300))
+
+# Inside the Game Loop:
+all_sprites.update()          # Calls update() on ALL sprites
+all_sprites.draw(screen)      # Draws ALL sprites at once
+
+# Remove a sprite from ALL its groups
+sprite.kill()
+```
+
+A sprite can belong to **multiple groups** at the same time.
+
+## Loading Images
+
+```python
+# Load from file
+image = pygame.image.load("player.png")
+
+# IMPORTANT: convert for better performance
+image = image.convert()         # No transparency
+image = image.convert_alpha()   # With transparency (PNG with alpha channel)
+
+# Make one color transparent (for sprites without an alpha channel)
+image.set_colorkey((255, 0, 255))  # Magenta = transparent
+
+# Scale
+image = pygame.transform.scale(image, (64, 64))
+```
+
+## Transparency and Surfaces
+
+Pygame has three levels of transparency:
+
+| Method | How it works | Typical use |
+|--------|--------------|-------------|
+| `Surface.set_alpha(0-255)` | Global transparency of the whole Surface | Fade in/out, HUDs |
+| `Surface.set_colorkey(color)` | One specific color becomes transparent | Sprites without PNG alpha |
+| `convert_alpha()` + PNG | Per-pixel alpha channel | Sprites with smooth edges |
+
+```python
+# Semi-transparent surface
+surf = pygame.Surface((200, 100))
+surf.set_alpha(128)   # 0 = invisible, 255 = solid
+surf.fill((0, 0, 0))  # Semi-transparent black overlay
+
+# Surface with per-pixel alpha support
+surf = pygame.Surface((64, 64), pygame.SRCALPHA)
+# Now you can draw with (R, G, B, A) colors
+pygame.draw.circle(surf, (255, 0, 0, 180), (32, 32), 30)
+```
+
+## Module 2 Summary {.unnumbered}
+
+```{python}
+summary_m2 = {
+    'Sprite':    'Base class — self.image and self.rect are mandatory',
+    'Group':     'Collection that handles update() and draw() for all sprites',
+    'kill()':    'Removes the sprite from all its groups (destroys it from the game)',
+    'convert()': 'Optimizes the image for the current display (better FPS)',
+    'set_alpha': 'Global transparency 0-255',
+    'SRCALPHA':  'Flag for a surface with per-pixel alpha channel',
+}
+print("MODULE 2 SUMMARY — Sprites")
+print("=" * 55)
+for k, v in summary_m2.items():
+    print(f"  {k:<15} → {v}")
+```
+
+---
+
+# 💥 MODULE 3 — Collisions
+
+## What is a Collision?
+
+A collision occurs when two objects **overlap in space**. Detecting it is essential for: taking damage, picking up items, blocking movement, shooting, and more.
+
+Pygame offers several levels of precision, with a clear trade-off:
+
+```
+Faster ←──────────────────────────────→ More Precise
+
+  Rect-Rect      Circle-Circle      Pixel-perfect
+  (AABB)         (distance)         (mask)
+```
+
+## Rect-Rect Collision (AABB)
+
+**AABB** = Axis-Aligned Bounding Box. The fastest and most commonly used method.
+
+```python
+# Method 1: rect.colliderect()
+if player.rect.colliderect(enemy.rect):
+    print("Collision!")
+
+# Method 2: rect.collidepoint() — point inside rect
+if player.rect.collidepoint(pygame.mouse.get_pos()):
+    print("Mouse is over the player")
+
+# Method 3: rect.collidelist() — against a list of rects
+index = player.rect.collidelist([rect1, rect2, rect3])
+# Returns the index of the first collided rect, or -1
+```
+
+### Manual AABB Implementation
+
+```{python}
+def aabb_collision(ax, ay, aw, ah, bx, by, bw, bh):
+    """
+    Two rectangles collide if there is NO separation on any axis.
+    There is separation if one is completely to the left, right,
+    above, or below the other.
+    """
+    sep_left  = bx > ax + aw   # B is to the right of A
+    sep_right = ax > bx + bw   # A is to the right of B
+    sep_above = by > ay + ah   # B is below A
+    sep_below = ay > by + bh   # A is below B
+
+    separated = sep_left or sep_right or sep_above or sep_below
+    return not separated
+
+# Tests
+cases = [
+    (0,  0,  50, 50,  30, 30, 50, 50, "Partially overlapping"),
+    (0,  0,  50, 50, 100, 0,  50, 50, "Separated horizontally"),
+    (0,  0,  50, 50,  25, 25, 10, 10, "B fully inside A"),
+    (0,  0,  50, 50,  50,  0, 50, 50, "Just touching (edge)"),
+    (0,  0,  50, 50,  51,  0, 50, 50, "Separated by 1px"),
+]
+
+print("AABB Collision — tests:")
+print("=" * 55)
+for ax, ay, aw, ah, bx, by, bw, bh, desc in cases:
+    result = aabb_collision(ax, ay, aw, ah, bx, by, bw, bh)
+    symbol = "✅ COLLISION" if result else "❌ no collision"
+    print(f"  {desc:<38} → {symbol}")
+```
+
+## Circle-Circle Collision
+
+More precise for round objects (bullets, coins, circular characters). The logic: two circles collide if the **distance between their centers** is less than the **sum of their radii**.
+
+```
+    A            B
+   (●)          (●)
+    ←── d ──→
+
+  If d < rA + rB → collision
+```
+
+```python
+import math
+
+def circle_collision(cx1, cy1, r1, cx2, cy2, r2):
+    distance = math.sqrt((cx2 - cx1)**2 + (cy2 - cy1)**2)
+    return distance < r1 + r2
+
+# Optimization: avoid sqrt using squared distance
+def circle_collision_fast(cx1, cy1, r1, cx2, cy2, r2):
+    dx = cx2 - cx1
+    dy = cy2 - cy1
+    dist_sq = dx*dx + dy*dy
+    return dist_sq < (r1 + r2)**2   # No sqrt needed
+```
+
+## spritecollide() — Group Collisions
+
+This is the most powerful collision function in Pygame.
+
+```python
+# Detect collision of ONE sprite against a GROUP
+hits = pygame.sprite.spritecollide(
+    player,    # individual sprite
+    bullets,   # group to check against
+    True       # True = remove colliding sprites from the group
+)
+# hits is a list of sprites that collided
+if hits:
+    health -= len(hits)
+
+# Detect collisions between TWO GROUPS
+clashes = pygame.sprite.groupcollide(
+    bullets,   # group 1
+    enemies,   # group 2
+    True,      # remove from group 1
+    True       # remove from group 2
+)
+# clashes is a dict: {bullet: [enemies_hit], ...}
+
+# Using circular collision (more precise)
+hits = pygame.sprite.spritecollide(
+    player, bullets, True,
+    collided=pygame.sprite.collide_circle
+)
+
+# Using pixel masks (maximum precision, slowest)
+hits = pygame.sprite.spritecollide(
+    player, bullets, True,
+    collided=pygame.sprite.collide_mask
+)
+```
+
+## Collision Response
+
+Detecting the collision is only half the job. The other half is **what to do** when it happens.
+
+### Pattern 1 — Separation (platforms, walls)
+
+```python
+# Move first, then correct
+player.rect.x += vel_x
+for platform in platforms:
+    if player.rect.colliderect(platform.rect):
+        if vel_x > 0:   # Moving right
+            player.rect.right = platform.rect.left
+        elif vel_x < 0: # Moving left
+            player.rect.left = platform.rect.right
+        vel_x = 0
+```
+
+### Pattern 2 — Bounce (bullets, balls)
+
+```python
+if bullet.rect.left <= 0 or bullet.rect.right >= WIDTH:
+    bullet.vel_x *= -1   # Reverse horizontal velocity
+```
+
+### Pattern 3 — Destruction (item picked up, enemy eliminated)
+
+```python
+items_picked = pygame.sprite.spritecollide(player, items, True)  # True = kill
+score += len(items_picked) * 10
+```
+
+## Collision Method Comparison
+
+```{python}
+import math
+
+print("Collision method comparison")
+print("=" * 60)
+print()
+
+methods = [
+    ("AABB (Rect-Rect)",   "O(1)",  "Low — invisible box",        "Platforms, items, most objects"),
+    ("Circle-Circle",      "O(1)",  "Medium — circular",          "Bullets, coins, round characters"),
+    ("collide_rect_ratio", "O(1)",  "Medium — shrunk rect",       "Hitbox smaller than the sprite"),
+    ("collide_mask",       "O(n)",  "Maximum — pixel by pixel",   "Bosses, irregular shapes (use sparingly)"),
+]
+
+print(f"  {'Method':<22} {'Cost':<8} {'Precision':<26} {'When to use'}")
+print("  " + "-" * 80)
+for m, c, p, u in methods:
+    print(f"  {m:<22} {c:<8} {p:<26} {u}")
+
+print()
+print("General rule: start with AABB. Switch only when the inaccuracy")
+print("is noticeable. Reserve collide_mask for very few sprites.")
+```
+
+---
+
+# 🎬 MODULE 4 — Animations
+
+## How does 2D animation work?
+
+Animation works exactly like a flipbook: a sequence of images (frames) that change at a certain speed to create the illusion of movement.
+
+```
+Frame 0    Frame 1    Frame 2    Frame 3
+  🧍         🚶         🧍         🚶
+  ↑          ↑          ↑          ↑
+ 100ms      100ms      100ms      100ms   → repeats
+```
+
+::: {.callout-important}
+Animation speed ≠ game FPS. At 60 FPS, you can animate at 10 FPS (change frame every 6 game frames).
+:::
+
+## Spritesheet
+
+A **spritesheet** is a single image containing all frames for all animations. It is used to:
+
+- Reduce the number of individual files
+- Load GPU memory more efficiently
+- Simplify animation management
+
+```
+spritesheet.png:
+┌──────────────────────────────────────────────────┐
+│ [idle_0][idle_1][idle_2][idle_3]                 │  ← row 0: idle
+│ [walk_0][walk_1][walk_2][walk_3][walk_4][walk_5] │  ← row 1: walk
+│ [jump_0][jump_1][jump_2]                         │  ← row 2: jump
+│ [attack_0][attack_1][attack_2][attack_3]         │  ← row 3: attack
+└──────────────────────────────────────────────────┘
+```
+
+To extract a frame use `Surface.subsurface(rect)`:
+
+```python
+sheet = pygame.image.load("spritesheet.png").convert_alpha()
+SIZE = 64  # Frame size
+
+# Extract frame at column=2, row=1
+frame = sheet.subsurface(pygame.Rect(2 * SIZE, 1 * SIZE, SIZE, SIZE))
+```
+
+## Animation Timer
+
+The timer controls when to advance to the next frame. There are two approaches:
+
+### Approach 1 — Frame counter (simpler)
+
+```python
+self.current_frame = 0
+self.counter       = 0
+self.anim_speed    = 8  # Change frame every 8 game frames
+
+def update(self):
+    self.counter += 1
+    if self.counter >= self.anim_speed:
+        self.counter = 0
+        self.current_frame = (self.current_frame + 1) % len(self.frames)
+    self.image = self.frames[self.current_frame]
+```
+
+### Approach 2 — Millisecond timer (recommended)
+
+```python
+self.current_frame  = 0
+self.last_update    = pygame.time.get_ticks()  # current ms
+self.frame_duration = 100  # ms per frame (100ms = 10 anim FPS)
+
+def update(self):
+    now = pygame.time.get_ticks()
+    if now - self.last_update >= self.frame_duration:
+        self.last_update = now
+        self.current_frame = (self.current_frame + 1) % len(self.frames)
+    self.image = self.frames[self.current_frame]
+```
+
+::: {.callout-tip}
+**Approach 2** is preferred because if the game FPS drop, the animation still plays at the same real-time speed on screen.
+:::
+
+## Animation State Machine
+
+A character has multiple animations depending on its state. The **state machine** decides which one to play.
+
+```
+                 ┌─────────────────────┐
+                 │       IDLE          │
+                 │  (standing still)   │
+                 └─────┬───────┬───────┘
+                       │       │
+               move    │       │ airborne
+               key     ↓       ↓
+               ┌───────────┐ ┌───────────┐
+               │   WALK    │ │   JUMP    │
+               │ (walking) │ │ (jumping) │
+               └─────┬─────┘ └─────┬─────┘
+                     │ release     │ land
+                     └──────┬──────┘
+                            ↓
+                          IDLE
+```
+
+```python
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        ...
+        self.state = 'idle'   # Current state
+        self.animations = {
+            'idle':   [frame_idle_0, frame_idle_1, frame_idle_2],
+            'walk':   [frame_walk_0, frame_walk_1, frame_walk_2, frame_walk_3],
+            'jump':   [frame_jump_0, frame_jump_1],
+        }
+
+    def change_state(self, new_state):
+        if self.state != new_state:        # Only if it actually changed
+            self.state = new_state
+            self.current_frame = 0         # Reset animation on state change
+
+    def update(self):
+        # Determine state
+        keys = pygame.key.get_pressed()
+        if self.airborne:
+            self.change_state('jump')
+        elif keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
+            self.change_state('walk')
+        else:
+            self.change_state('idle')
+
+        # Animate
+        frames = self.animations[self.state]
+        self.image = frames[self.current_frame % len(frames)]
+```
+
+## State Machine Simulation
+
+```{python}
+class StateMachine:
+    def __init__(self):
+        self.state = 'idle'
+        self.current_frame = 0
+        self.frames_per_state = {'idle': 3, 'walk': 4, 'jump': 2, 'attack': 4}
+        self.history = []
+
+    def change_state(self, new):
+        if self.state != new:
+            self.history.append(f"  {self.state} → {new}")
+            self.state = new
+            self.current_frame = 0  # Reset on state change
+
+    def tick(self):
+        total = self.frames_per_state[self.state]
+        self.current_frame = (self.current_frame + 1) % total
+        return f"{self.state}[{self.current_frame}/{total-1}]"
+
+# Simulate a sequence of actions
+sm = StateMachine()
+sequence = [
+    ('idle', 3), ('walk', 5), ('jump', 4),
+    ('idle', 2), ('attack', 5), ('idle', 3),
+]
+
+print("State machine simulation:")
+print("=" * 45)
+for action, duration in sequence:
+    sm.change_state(action)
+    frames_out = [sm.tick() for _ in range(duration)]
+    print(f"  {' → '.join(frames_out)}")
+
+print()
+print("State transitions:")
+for h in sm.history:
+    print(h)
+```
+
+---
+
+# 📁 Practice Scripts
+
+Run with `python scripts/script_name.py` from the module folder.
+
+| Script | Module | What it demonstrates |
+|--------|--------|----------------------|
+| `01_sprite_basico.py` | 2 | Sprite class, image, rect, Group |
+| `02_sprite_grupos.py` | 2 | Multiple groups, kill(), transparency |
+| `03_colisiones_rect.py` | 3 | Visual interactive AABB |
+| `04_colisiones_sprites.py` | 3 | spritecollide, groupcollide, response + particle explosion |
+| `05_animacion_frames.py` | 4 | Animation timer, generated spritesheet |
+| `06_estados_animacion.py` | 4 | Full state machine (idle/walk/jump/attack) |
+
+```bash
+pip install pygame
+python scripts/06_estados_animacion.py
+```
+
+---
+
+# ✅ General Summary
+
+## Module 2 — Sprites {.unnumbered}
+
+- `Sprite` = `image` + `rect` + encapsulated logic
+- `Group` = collection with automatic `update()` and `draw()`
+- `kill()` = remove a sprite from the game entirely
+- `convert_alpha()` = PNG with per-pixel transparency
+
+## Module 3 — Collisions {.unnumbered}
+
+- AABB (`colliderect`) = fastest, sufficient for most cases
+- `spritecollide(sprite, group, kill)` = one vs. many collision
+- `groupcollide(g1, g2, k1, k2)` = group vs. group collision
+- Response depends on type: separate, bounce, or destroy
+
+## Module 4 — Animations {.unnumbered}
+
+- Spritesheet = single image holding all frames
+- ms timer = FPS-independent (preferred approach)
+- State machine = determines which animation to play
+- Reset `current_frame = 0` whenever the state changes
+
+---
+
+::: {.callout-note}
+**Next module:** Scenes and Game States — menu → gameplay → game over 🎮
+:::

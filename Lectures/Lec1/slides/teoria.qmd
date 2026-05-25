@@ -1,6 +1,6 @@
 ---
-title: "El Game Loop y la estructura de un juego"
-subtitle: "Curso de Desarrollo de Juegos con Pygame"
+title: "Git for Dummies"
+subtitle: "Version control from scratch — Linux edition"
 format:
   revealjs:
     slide-number: true
@@ -8,362 +8,577 @@ format:
       buttons: false
     preview-links: auto
     theme: dark
-    code-block-height: 400px
-  html:
-    allow-html: true
+    code-block-height: 380px
+    highlight-style: github-dark
+    fontsize: 30px
 ---
 
-## En este módulo vas a aprender
+## What you'll learn
 
-- Qué es el **Game Loop** y por qué es el corazón de todo juego
-- Las **tres fases** que se repiten en cada frame
-- Cómo controlar los **FPS** con el Clock de Pygame
-- Cómo manejar **eventos de input** (teclado y mouse)
-- La estructura mínima de un juego funcional
-
-
-## 1. ¿Qué es el Game Loop?
-
-Todo juego, sin importar cuán simple o complejo, corre sobre un **ciclo que se repite sin parar** mientras el juego está activo. Este ciclo se llama **Game Loop**.
-
-
-
-## 1. ¿Qué es el Game Loop?
-
-Todo juego, sin importar cuán simple o complejo, corre sobre un **ciclo que se repite sin parar** mientras el juego está activo. Este ciclo se llama **Game Loop**.
-
-```
-┌────────────────────────────────────────────────────┐
-│                   GAME LOOP                        │
-│                                                    │
-│   ┌──────────┐   ┌──────────┐   ┌──────────┐       │
-│   │  INPUT   │ → │  UPDATE  │ → │  RENDER  │ ──┐   │
-│   └──────────┘   └──────────┘   └──────────┘   │   │
-│         ↑                                      │   │
-│         └──────────────────────────────────────┘   │
-│                                                    │
-│   Se repite ~60 veces por segundo (60 FPS)         │
-└────────────────────────────────────────────────────┘
-```
-
-
-## 1. ¿Qué es el Game Loop?
-
-Todo juego, sin importar cuán simple o complejo, corre sobre un **ciclo que se repite sin parar** mientras el juego está activo. Este ciclo se llama **Game Loop**.
-
-```
-┌────────────────────────────────────────────────────┐
-│                   GAME LOOP                        │
-│                                                    │
-│   ┌──────────┐   ┌──────────┐   ┌──────────┐       │
-│   │  INPUT   │ → │  UPDATE  │ → │  RENDER  │ ──┐   │
-│   └──────────┘   └──────────┘   └──────────┘   │   │
-│         ↑                                      │   │
-│         └──────────────────────────────────────┘   │
-│                                                    │
-│   Se repite ~60 veces por segundo (60 FPS)         │
-└────────────────────────────────────────────────────┘
-```
-
-Cada iteración del loop se llama **frame** y produce una imagen en pantalla. A 60 FPS, da la ilusión de movimiento fluido — igual que un flipbook.
-
-
-## 2. Las tres fases del Game Loop
-
-### Fase 1 — INPUT
-
-Detecta qué está haciendo el jugador:
-
-- Teclas presionadas o soltadas
-- Movimiento y clicks del mouse
-- El evento de cierre de ventana (`QUIT`)
-
-::: {.callout-warning}
-**Regla crítica:** Si no procesas los eventos en cada frame, la cola se llena y la ventana se congela.
-:::
-
-
-## 2. Las tres fases del Game Loop
-### Fase 2 — UPDATE
-
-Toda la **lógica del juego** ocurre aquí:
-
-- Mover personajes y enemigos
-- Detectar colisiones
-- Actualizar puntaje y vidas
-- Aplicar física básica (gravedad, velocidad)
-
-
-## 2. Las tres fases del Game Loop
-### Fase 3 — RENDER
-
-Dibuja el estado actual en pantalla:
-
-1. Borra la pantalla con `fill()`
-2. Dibuja todos los objetos
-3. Muestra el frame con `pygame.display.flip()`
+- What Git is and **why every developer uses it**
+- How to install and configure Git on Linux
+- The core concepts: repos, commits, branches
+- The essential daily commands
+- How to work with **GitHub / GitLab**
+- How to fix the most common mistakes
 
 ::: {.callout-note}
-**¿Por qué borrar antes de dibujar?** Sin borrar, los objetos dejan "estelas" en pantalla porque los frames anteriores quedan visibles.
+No prior experience needed. If you can open a terminal, you're ready.
 :::
 
+---
 
-## 3. Conceptos técnicos clave — FPS
+## What is Git?
 
-Los FPS indican cuántas veces por segundo se ejecuta el Game Loop.
+Git is a **version control system** — it tracks every change you make to your files over time.
 
-| FPS | Percepción |
-|-----|------------|
-| < 15 | Notoriamente entrecortado |
-| 30 | Jugable, estándar en consolas antiguas |
-| 60 | Fluido, estándar actual |
-| 120+ | Muy fluido, para monitores de alta frecuencia |
+Think of it like a **save system in a video game**, but for code:
 
-**Sin control de FPS**, el juego corre tan rápido como el CPU permita — el mismo juego correría a velocidades completamente distintas en hardware diferente.
-
-
-## Double Buffering
-
-Pygame usa dos buffers de imagen:
-
-- **Back buffer:** donde dibujas (no visible)
-- **Front buffer:** lo que ve el usuario
-
-`pygame.display.flip()` intercambia ambos buffers. Esto evita el **tearing** (ver un frame a medio dibujar).
-
-
-## Dos formas de capturar input
-
-| Método | Cuándo dispara | Uso típico |
-|--------|---------------|------------|
-| `pygame.event.get()` | Una vez al presionar | Saltar, disparar, abrir menú |
-| `pygame.key.get_pressed()` | Cada frame mientras esté sostenida | Mover personaje |
-
-## Dos formas de capturar input
-
-**Error común:** usar `KEYDOWN` para movimiento. El personaje se mueve un paso, para, y recién después empieza a moverse fluido (el delay es del SO). La solución es `get_pressed()` para movimiento continuo.
-
-
-## 4. Sistema de coordenadas en Pygame
-
-El origen `(0, 0)` está en la esquina **superior izquierda**, y el eje Y crece hacia **abajo**.
-
-```
-(0,0) ──────────────────→ X+
-  │
-  │     (100, 50) ●
-  │
-  │                (400, 300) ●
-  ↓
- Y+
-```
-
-
-## 4. Sistema de coordenadas en Pygame
-
-El origen `(0, 0)` está en la esquina **superior izquierda**, y el eje Y crece hacia **abajo**.
-
-```
-(0,0) ──────────────────→ X+
-  │
-  │     (100, 50) ●
-  │
-  │                (400, 300) ●
-  ↓
- Y+
-```
-
-::: {.callout-important}
-Para mover un objeto **hacia arriba** en pantalla, hay que **restarle** a Y. Esto es diferente a la matemática convencional donde Y crece hacia arriba.
-:::
-
-
-## 5. Estructura del código
-
-Todo juego en Pygame sigue esta estructura:
-
-```python
-import pygame
-import sys
-
-# ── BLOQUE 1: Inicialización ──────────────────────────────
-pygame.init()
-
-ANCHO, ALTO = 800, 600
-FPS = 60
-NEGRO  = (0, 0, 0)
-BLANCO = (255, 255, 255)
-AZUL   = (50, 120, 220)
-
-pantalla = pygame.display.set_mode((ANCHO, ALTO))
-pygame.display.set_caption("Módulo 1 — Game Loop")
-clock = pygame.time.Clock()
-```
-
-
-## Estructura del código (cont.)
-
-```python
-# ── BLOQUE 2: Estado inicial ──────────────────────────────
-x, y = ANCHO // 2, ALTO // 2
-velocidad = 4
-
-# ── BLOQUE 3: Game Loop ───────────────────────────────────
-while True:
-
-    # FASE 1 — INPUT
-    for evento in pygame.event.get():
-        if evento.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-
-    teclas = pygame.key.get_pressed()
-    if teclas[pygame.K_LEFT]:  x -= velocidad
-    if teclas[pygame.K_RIGHT]: x += velocidad
-    if teclas[pygame.K_UP]:    y -= velocidad
-    if teclas[pygame.K_DOWN]:  y += velocidad
-
-    # FASE 2 — UPDATE
-    x = max(0, min(x, ANCHO - 40))
-    y = max(0, min(y, ALTO - 40))
-
-    # FASE 3 — RENDER
-    pantalla.fill(NEGRO)
-    pygame.draw.rect(pantalla, AZUL, (x, y, 40, 40))
-    pygame.display.flip()
-
-    clock.tick(FPS)
-```
-
-
-## 6. Eventos disponibles en Pygame
-
-| Evento | Descripción |
-|--------|-------------|
-| `pygame.QUIT` | Click en la X de la ventana |
-| `pygame.KEYDOWN` | Tecla recién presionada |
-| `pygame.KEYUP` | Tecla soltada |
-| `pygame.MOUSEBUTTONDOWN` | Botón del mouse presionado |
-| `pygame.MOUSEBUTTONUP` | Botón del mouse soltado |
-| `pygame.MOUSEMOTION` | Mouse movido (incluye posición y delta) |
-| `pygame.MOUSEWHEEL` | Scroll del mouse |
-
-
-## Teclas más usadas en juegos
-
-| Categoría | Teclas |
-|-----------|--------|
-| Movimiento | `K_LEFT`, `K_RIGHT`, `K_UP`, `K_DOWN` |
-| Acciones | `K_SPACE`, `K_RETURN`, `K_ESCAPE` |
-| Letras | `K_a` ... `K_z` |
-| Números | `K_0` ... `K_9` |
-| Modificadores | `K_LSHIFT`, `K_RSHIFT`, `K_LCTRL`, `K_RCTRL` |
-
-Todas son constantes del módulo `pygame`.
-
-
-## 7. Input: event vs get_pressed
-
-**`KEYDOWN` (event):** dispara una sola vez al presionar
-
-```
-Frame 0: KEYDOWN detectado → el personaje se mueve 1 vez
-Frame 1: sin evento (la tecla sigue presionada pero nada pasa)
-Frame 2: sin evento
-...
-```
-
-**`get_pressed()`:** dispara CADA frame mientras la tecla esté sostenida
-
-```
-Frame 0: get_pressed → el personaje se mueve (movimiento fluido)
-Frame 1: get_pressed → el personaje se mueve (movimiento fluido)
-Frame 2: get_pressed → el personaje se mueve (movimiento fluido)
-...
-```
+- You can go back to any previous save
+- Multiple people can play (work) simultaneously
+- You can try risky things in a separate slot without breaking the main game
 
 ::: {.callout-tip}
-Usa `KEYDOWN` para acciones únicas (saltar, disparar) y `get_pressed()` para movimiento continuo.
+Git ≠ GitHub. **Git** is the tool. **GitHub** is a website that hosts your Git repositories online.
 :::
 
+---
 
-## 8. El Clock y los FPS
+## Why bother?
 
-El `Clock` de Pygame limita cuán rápido corre el game loop.
+::: columns
+::: {.column style="width:50%; font-size: 0.8em;"}
+**Without Git**
 
-```python
-import time
+- `project_final.py`
+- `project_final_v2.py`
+- `project_FINAL_USE_THIS.py`
+- `project_FINAL_fixed.py`
+- `project_FINAL_fixed2_omg.py`
+:::
 
-def simular_clock_tick(fps_objetivo, frames=5):
-    """
-    Simula cómo clock.tick(fps) controla la velocidad del loop.
-    En Pygame, clock.tick(60) bloquea hasta que haya pasado 1/60 segundos.
-    """
-    duracion_frame = 1.0 / fps_objetivo  # segundos por frame
+::: {.column style="width:50%; font-size: 0.8em;"}
+**With Git**
 
-    for i in range(frames):
-        inicio = time.time()
+- `project.py`
+- Full history of every change
+- Who changed what and when
+- Easy to undo anything
+- Safe collaboration
+:::
+:::
 
-        time.sleep(0.002)  # Simula 2ms de trabajo del juego
+---
 
-        tiempo_trabajado = time.time() - inicio
-        espera = duracion_frame - tiempo_trabajado
-        if espera > 0:
-            time.sleep(espera)
+## 1. Installing Git on Linux
 
-        tiempo_total = time.time() - inicio
-        fps_real = 1.0 / tiempo_total
-        print(f"Frame {i+1}: trabajo={tiempo_trabajado*1000:.1f}ms, "
-              f"espera={espera*1000:.1f}ms, FPS real≈{fps_real:.0f}")
+Open a terminal and run the command for your distro:
 
-simular_clock_tick(fps_objetivo=30, frames=4)
+**Ubuntu / Debian / Mint**
+```bash
+sudo apt update
+sudo apt install git
 ```
 
-
-## 9. Sistema de coordenadas — ejercicio
-
-Calcula las coordenadas para ubicar objetos en distintas posiciones de la pantalla.
-
-```python
-ANCHO = 800
-ALTO  = 600
-TAM   = 40   # Tamaño del objeto
-
-posiciones = {
-    'Esquina superior izquierda': (0, 0),
-    'Esquina superior derecha':   (ANCHO - TAM, 0),
-    'Esquina inferior izquierda': (0, ALTO - TAM),
-    'Esquina inferior derecha':   (ANCHO - TAM, ALTO - TAM),
-    'Centro exacto':              (ANCHO // 2 - TAM // 2, ALTO // 2 - TAM // 2),
-    'Centro horizontal, arriba':  (ANCHO // 2 - TAM // 2, 20),
-}
-
-for nombre, coords in posiciones.items():
-    print(f"  {nombre:<35} → {coords}")
+**Fedora / RHEL / CentOS**
+```bash
+sudo dnf install git
 ```
 
+**Arch / Manjaro**
+```bash
+sudo pacman -S git
+```
 
-## Resumen del módulo
+**Verify the installation:**
+```bash
+git --version
+# git version 2.x.x
+```
+
+---
+
+## 2. First-time configuration
+
+Before using Git, tell it who you are. This info is attached to every commit you make.
+
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+```
+
+Set your preferred text editor (for commit messages):
+
+```bash
+# Use VS Code
+git config --global core.editor "code --wait"
+
+# Use nano (simplest for beginners)
+git config --global core.editor "nano"
+
+# Use vim
+git config --global core.editor "vim"
+```
+
+**Check your config:**
+```bash
+git config --list
+```
+
+---
+
+## 3. Core concepts
+
+| Concept | What it means |
+|---------|--------------|
+| **Repository (repo)** | A folder tracked by Git |
+| **Working directory** | Your files as you see them |
+| **Staging area** | Changes selected for the next commit |
+| **Commit** | A saved snapshot of your staged changes |
+| **Branch** | An independent line of development |
+| **Remote** | A copy of the repo hosted online (GitHub, etc.) |
+
+---
+
+## The three areas of Git
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  YOUR PROJECT                       │
+│                                                     │
+│  ┌─────────────┐  git add  ┌──────────────┐        │
+│  │   Working   │ ────────► │   Staging    │        │
+│  │  Directory  │           │    Area      │        │
+│  └─────────────┘           └──────┬───────┘        │
+│         ▲                         │ git commit     │
+│         │                         ▼                │
+│         │                  ┌──────────────┐        │
+│         └──────────────────│  Repository  │        │
+│           git checkout     │  (History)   │        │
+│                            └──────────────┘        │
+└─────────────────────────────────────────────────────┘
+```
+
+::: {.callout-note}
+`git add` doesn't save anything yet — it just prepares changes. `git commit` is the actual save.
+:::
+
+---
+
+## 4. Starting a repository
+
+**Option A — Start from scratch (new project)**
+
+```bash
+mkdir my-project
+cd my-project
+git init
+```
+
+This creates a hidden `.git/` folder — that's where Git stores everything.
+
+**Option B — Clone an existing repo from GitHub**
+
+```bash
+git clone https://github.com/username/repository.git
+
+# Clone into a specific folder name
+git clone https://github.com/username/repository.git my-folder
+```
+
+**Check the status of your repo at any time:**
+```bash
+git status
+```
+
+---
+
+## 5. Your first commit — step by step
+
+**Step 1: Create or modify a file**
+```bash
+echo "# My Project" > README.md
+```
+
+**Step 2: Check what Git sees**
+```bash
+git status
+# README.md is listed as "Untracked"
+```
+
+**Step 3: Stage the file**
+```bash
+git add README.md
+
+# Stage ALL changed files at once
+git add .
+```
+
+**Step 4: Commit with a message**
+```bash
+git commit -m "Add README file"
+```
+
+---
+
+## Writing good commit messages
+
+A good commit message tells **what changed and why**, not how.
 
 ::: columns
 ::: {.column width="50%"}
-**Conceptos clave:**
+**❌ Bad messages**
 
-- El **Game Loop** es el corazón de todo juego
-- Tres fases: **INPUT → UPDATE → RENDER**
-- **FPS** controla la velocidad del loop
-- **Double Buffering** evita el tearing
+- `fix`
+- `stuff`
+- `changes`
+- `asdfgh`
+- `final`
+- `final for real`
 :::
 
 ::: {.column width="50%"}
-**Input:**
+**✅ Good messages**
 
-- `event.get()` → acciones únicas
-- `get_pressed()` → movimiento continuo
-
-**Coordenadas:**
-
-- Origen en esquina **superior izquierda**
-- Eje Y crece hacia **abajo**
+- `Add login form validation`
+- `Fix crash when user list is empty`
+- `Remove deprecated API calls`
+- `Update README with install steps`
 :::
+:::
+
+::: {.callout-tip}
+Use the imperative mood: "Add feature" not "Added feature".
+:::
+
+---
+
+## 6. Viewing history
+
+**See all commits:**
+```bash
+git log
+```
+
+**Compact one-line view (much nicer):**
+```bash
+git log --oneline
+# a3f1c2d Add login form
+# 9b2e81a Fix crash on empty list
+# 4c7a012 Initial commit
+```
+
+**See what actually changed in each commit:**
+```bash
+git log --oneline --stat
+```
+
+**See changes not yet staged:**
+```bash
+git diff
+```
+
+**See changes already staged:**
+```bash
+git diff --staged
+```
+
+---
+
+## 7. Undoing things
+
+**Unstage a file (keep your edits):**
+```bash
+git restore --staged filename.py
+```
+
+**Discard all edits to a file (back to last commit):**
+```bash
+git restore filename.py
+```
+
+::: {.callout-warning}
+`git restore filename.py` permanently discards unsaved changes. There's no undo.
+:::
+
+**Undo the last commit (keep files intact):**
+```bash
+git reset --soft HEAD~1
+```
+
+**Fix the last commit message:**
+```bash
+git commit --amend -m "Corrected commit message"
+```
+
+---
+
+## 8. Branches
+
+A branch is an **independent copy** of your project where you can work freely without affecting the main code.
+
+```
+main   ──●──●──●──────────────●──▶
+                \            /
+feature         ●──●──●──●──
+```
+
+**Create and switch to a new branch:**
+```bash
+git switch -c feature/login
+```
+
+**List all branches:**
+```bash
+git branch
+```
+
+**Switch between branches:**
+```bash
+git switch main
+git switch feature/login
+```
+
+**Delete a branch (after merging):**
+```bash
+git branch -d feature/login
+```
+
+---
+
+## Merging branches
+
+Once your feature is ready, merge it back into `main`:
+
+```bash
+# 1. Switch to the target branch
+git switch main
+
+# 2. Merge the feature branch into it
+git merge feature/login
+```
+
+**If there are no conflicts**, Git merges automatically.
+
+**If there's a conflict**, Git marks the affected file:
+
+```
+<<<<<<< HEAD
+print("Hello from main")
+=======
+print("Hello from feature")
+>>>>>>> feature/login
+```
+
+Edit the file to keep what you want, remove the markers, then:
+
+```bash
+git add filename.py
+git commit -m "Merge feature/login into main"
+```
+
+---
+
+## 9. Working with remotes (GitHub / GitLab)
+
+**Add a remote to your local repo:**
+```bash
+git remote add origin https://github.com/username/repo.git
+```
+
+**Check your remotes:**
+```bash
+git remote -v
+```
+
+**Push your commits to GitHub for the first time:**
+```bash
+git push -u origin main
+```
+
+**Push after the first time:**
+```bash
+git push
+```
+
+**Pull latest changes from GitHub:**
+```bash
+git pull
+```
+
+---
+
+## Typical daily workflow
+
+```bash
+# 1. Get the latest changes from teammates
+git pull
+
+# 2. Create a branch for your task
+git switch -c feature/my-task
+
+# 3. Do your work... edit files...
+
+# 4. Check what changed
+git status
+git diff
+
+# 5. Stage and commit
+git add .
+git commit -m "Implement my task"
+
+# 6. Push to GitHub
+git push -u origin feature/my-task
+
+# 7. Open a Pull Request on GitHub and ask for review
+```
+
+---
+
+## 10. The `.gitignore` file
+
+Tell Git to **ignore files you never want to commit** (secrets, logs, build artifacts):
+
+```bash
+# Create the file at the root of your project
+nano .gitignore
+```
+
+Example `.gitignore` for a Python project:
+
+```
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Environment variables (NEVER commit these!)
+.env
+
+# Editor files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+```
+
+```bash
+git add .gitignore
+git commit -m "Add .gitignore"
+```
+
+---
+
+## 11. SSH keys — no more password prompts
+
+Instead of typing your password every push, use an SSH key:
+
+**Step 1: Generate a key pair**
+```bash
+ssh-keygen -t ed25519 -C "you@example.com"
+# Press Enter to accept defaults
+```
+
+**Step 2: Copy your public key**
+```bash
+cat ~/.ssh/id_ed25519.pub
+# Copy the entire output
+```
+
+**Step 3: Add it to GitHub**
+
+GitHub → Settings → SSH and GPG keys → New SSH key → Paste → Save
+
+**Step 4: Test the connection**
+```bash
+ssh -T git@github.com
+# Hi username! You've successfully authenticated.
+```
+
+**Step 5: Use SSH URLs instead of HTTPS**
+```bash
+git remote set-url origin git@github.com:username/repo.git
+```
+
+---
+
+## Essential commands cheatsheet
+
+| Command | What it does |
+|---------|-------------|
+| `git init` | Start a new repo |
+| `git clone <url>` | Copy a remote repo locally |
+| `git status` | Show current state |
+| `git add .` | Stage all changes |
+| `git commit -m "msg"` | Save a snapshot |
+| `git log --oneline` | View commit history |
+| `git push` | Upload to remote |
+| `git pull` | Download from remote |
+| `git switch -c <name>` | Create + switch branch |
+| `git merge <branch>` | Merge a branch |
+| `git restore <file>` | Discard file changes |
+| `git diff` | Show unstaged changes |
+
+---
+
+## Common mistakes and fixes
+
+**"I committed to main by accident"**
+```bash
+git reset --soft HEAD~1      # Undo commit, keep changes staged
+git switch -c feature/oops   # Move work to a new branch
+```
+
+**"I accidentally deleted a file"**
+```bash
+git restore deleted_file.py
+```
+
+**"I need to see what the project looked like 3 commits ago"**
+```bash
+git log --oneline            # Find the commit hash
+git checkout a3f1c2d         # Look around (read-only)
+git switch main              # Come back
+```
+
+**"My push was rejected"**
+```bash
+git pull --rebase            # Get remote changes first
+git push                     # Now push your commits on top
+```
+
+---
+
+## Summary
+
+::: columns
+::: {.column width="50%"}
+**The golden flow**
+
+1. `git pull` — sync first
+2. `git switch -c branch` — work in isolation
+3. edit → `git add .` → `git commit`
+4. repeat step 3
+5. `git push` — share your work
+6. open a Pull Request
+:::
+
+::: {.column width="50%"}
+**The golden rules**
+
+- Commit **early and often**
+- Write **meaningful messages**
+- Never commit `.env` or secrets
+- Always work on a **branch**
+- `git status` is your best friend
+:::
+:::
+
+::: {.callout-tip}
+The best way to learn Git is to use it every day, even for personal projects. Break things, recover them — that's how it clicks.
 :::

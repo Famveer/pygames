@@ -10,11 +10,32 @@ For labs, please bring your notebooks!
 ### Week 1
 
 {: .lecture}
->Session 1: [Introduction to Game Loop](./Lectures/Lec1/)
+>Lecture 1: [Introduction to Git](./Lectures/Lec1/)
+>
+
+--- 
+
+
+### Week 2
+
+{: .lecture}
+>Lecture 2: [Introduction to Game Loop](./Lectures/Lec2/)
 >
 
 {: .lab}
 >Lab 1: [Introduction to PyGame](./Labs/Lab1/)
+>
+
+--- 
+
+
+### Week 3
+
+{: .lecture}
+>Lecture 3: [Introduction to Sprites](./Lectures/Lec3/)
+
+{: .lab}
+>Lab 2: [Introduction to Sprites](./Labs/Lab2/)
 >
 
 --- 

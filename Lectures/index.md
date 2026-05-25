@@ -8,7 +8,9 @@ layout: default
 
 Lectures sessions will help you understand the theory and concepts behind games.
 
-**Lecture 1**: [Introduction to Game Loop](./Lec1)
 
-- [slides](./Lec1/slides/teoria.html)
+**Lecture 1**: [Introduction to Git](./Lec1)
+
+
+**Lecture 2**: [Introduction to Game Loop](./Lec2)
 

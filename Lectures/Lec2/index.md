@@ -1,19 +1,18 @@
 ---
-title: Lec1
+title: Lec2
 parent: Lectures
-nav_order: 1
+nav_order: 2
 layout: default
 ---
 
-# Lecture 1: Introduction to Git
+# Lecture 2: Introduction to Game loop
 {: .no_toc }
 
 {: .summary}
 >In this lecture, we will learn:
 >
->* Git
->* Create a repository
->* Commits, push, pulls
+>* Game loop
+>* Pygame events
 
 
 ### Slides
