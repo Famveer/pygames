@@ -5,7 +5,7 @@ nav_order: 1
 permalink: /
 ---
 
-# Videogames with PyGame - Graduate Course
+# Videogames with PyGame
 {: .fs-9 }
 
 The overall goal of this course is to provide students with the foundation needed to understand and study the videogame development using pygame.
