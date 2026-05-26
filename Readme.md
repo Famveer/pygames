@@ -1,3 +1,7 @@
+# PyGame course
+
+See the website [here](https://famveer.github.io/pygames).
+
 # Pre Requisites
 
 * **GEM** >= 3.3.5
