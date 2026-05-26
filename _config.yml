@@ -4,7 +4,7 @@ theme: just-the-docs
 remote_theme: just-the-docs/just-the-docs
 
 url: "https://famveer.github.io"
-baseurl: "/videogames"
+baseurl: "/py_videogames"
 
 #aux_links:
 #  Template Repository: https://github.com/just-the-docs/just-the-docs-template
