@@ -1021,8 +1021,9 @@ class GameScene(Scene):
         self.runners  = pygame.sprite.Group()
         self.flyers   = pygame.sprite.Group()
         self.enemies  = pygame.sprite.Group()   # All enemies combined
-        self.boss     = None
+        self.boss           = None
         self.boss_triggered = False
+        self.victory_timer  = 0.0
 
         for kind, c, r in ENEMY_SPAWNS:
             if kind == "runner":
@@ -1101,7 +1102,14 @@ class GameScene(Scene):
                         explode(self.boss.x + self.boss.W//2,
                                 self.boss.y + self.boss.H//2, NM, 60, self.camera)
                         self.mgr.shared["score"] = self.player.score + 100
-                        pygame.time.set_timer(pygame.USEREVENT + 1, 2000)
+                        self.victory_timer = 0.001   # start countdown
+
+        # Victory countdown (replaces unreliable USEREVENT approach)
+        if self.victory_timer > 0:
+            self.victory_timer += dt
+            if self.victory_timer >= 2.0:
+                self.mgr.replace(VictoryScene(self.mgr))
+                return
 
         # Enemy bodies hurt player
         if self.player.alive:
@@ -1133,10 +1141,6 @@ class GameScene(Scene):
             if self.player.anim_t > 1.5:
                 self.mgr.shared["score"] = self.player.score
                 self.mgr.replace(GameOverScene(self.mgr))
-
-        # Check victory (via timer event)
-        for ev_type in pygame.event.get(pygame.USEREVENT + 1):
-            self.mgr.replace(VictoryScene(self.mgr))
 
     def draw(self, surf):
         draw_parallax(surf, self.camera.x)
