@@ -1,19 +1,19 @@
 ---
-title: Lec3
+title: Lec5
 parent: Lectures
-nav_order: 3
+nav_order: 5
 layout: default
 ---
 
-# Lecture 3: Introduction to Sprites
+# Lecture 5: Introduction to Animatios
 {: .no_toc }
 
 {: .summary}
 >In this lecture, we will learn:
 >
->* Sprites
->* Rects
->* FPS
+>* Collides
+>* Collisions
+>* Overlappings
 
 
 ### Slides

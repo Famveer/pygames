@@ -206,245 +206,207 @@ Felipe A. Moreno-Vera
 </div>
 
 </section>
-<section class="slide level2">
-
-<div class="callout callout-note callout-titled callout-style-default">
-<div class="callout-body">
-<div class="callout-title">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<p><strong>Note</strong></p>
-</div>
-<div class="callout-content">
-<p>In these modules you will learn:</p>
-<ul>
-<li>What a Sprite is, the <code>pygame.sprite.Sprite</code> class, groups, and transparency</li>
-<li><code>pygame.Rect</code> in depth, collision types, and collision response</li>
-<li>Frame-based animation, spritesheets, and the animation state machine</li>
-</ul>
-</div>
-</div>
-</div>
-</section>
 <section>
-<section id="sprites-images" class="title-slide slide level1 center">
-<h1>Sprites &amp; Images</h1>
+<section id="collisions" class="title-slide slide level1 center">
+<h1>💥 Collisions</h1>
 
 </section>
-<section id="what-is-a-sprite" class="slide level2">
-<h2>What is a Sprite?</h2>
-<p>In game development, a <strong>sprite</strong> is any visual object in the game: the player, an enemy, a bullet, a pickup item. The term comes from the graphics chips of the 1980s that handled independent 2D objects on top of a background.</p>
-<p>In Pygame, <code>pygame.sprite.Sprite</code> is a base class that gives you structure to manage game objects in an organized way. Each sprite has two mandatory attributes:</p>
-<ul>
-<li><strong><code>self.image</code></strong> → the visual surface (the drawing)</li>
-<li><strong><code>self.rect</code></strong> → the rectangle that defines position and size</li>
-</ul>
-<pre><code> self.image            self.rect
- ┌──────────┐          ┌──────────┐
- │  pixels  │          │ x, y     │  ← position on screen
- │  (Surface│          │ w, h     │  ← width and height
- │   2D)    │          │ center   │  ← and many helper props
- └──────────┘          └──────────┘</code></pre>
+<section id="what-is-a-collision" class="slide level2">
+<h2>What is a Collision?</h2>
+<p>A collision occurs when two objects <strong>overlap in space</strong>. Detecting it is essential for: taking damage, picking up items, blocking movement, shooting, and more.</p>
+<p>Pygame offers several levels of precision, with a clear trade-off:</p>
+<pre><code>Faster ←──────────────────────────────→ More Precise
+
+  Rect-Rect      Circle-Circle      Pixel-perfect
+  (AABB)         (distance)         (mask)</code></pre>
 </section>
-<section id="anatomy-of-a-sprite" class="slide level2">
-<h2>Anatomy of a Sprite</h2>
-<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href=""></a><span class="kw">class</span> Player(pygame.sprite.Sprite):</span>
-<span id="cb2-2"><a href=""></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, x, y):</span>
-<span id="cb2-3"><a href=""></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()           <span class="co"># MANDATORY: call the parent __init__</span></span>
+<section id="rect-rect-collision-aabb" class="slide level2">
+<h2>Rect-Rect Collision (AABB)</h2>
+<p><strong>AABB</strong> = Axis-Aligned Bounding Box. The fastest and most commonly used method.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href=""></a><span class="co"># Method 1: rect.colliderect()</span></span>
+<span id="cb2-2"><a href=""></a><span class="cf">if</span> player.rect.colliderect(enemy.rect):</span>
+<span id="cb2-3"><a href=""></a>    <span class="bu">print</span>(<span class="st">"Collision!"</span>)</span>
 <span id="cb2-4"><a href=""></a></span>
-<span id="cb2-5"><a href=""></a>        <span class="co"># image: Surface with the drawing</span></span>
-<span id="cb2-6"><a href=""></a>        <span class="va">self</span>.image <span class="op">=</span> pygame.Surface((<span class="dv">48</span>, <span class="dv">48</span>))</span>
-<span id="cb2-7"><a href=""></a>        <span class="va">self</span>.image.fill((<span class="dv">50</span>, <span class="dv">120</span>, <span class="dv">220</span>))   <span class="co"># Solid blue</span></span>
+<span id="cb2-5"><a href=""></a><span class="co"># Method 2: rect.collidepoint() — point inside rect</span></span>
+<span id="cb2-6"><a href=""></a><span class="cf">if</span> player.rect.collidepoint(pygame.mouse.get_pos()):</span>
+<span id="cb2-7"><a href=""></a>    <span class="bu">print</span>(<span class="st">"Mouse is over the player"</span>)</span>
 <span id="cb2-8"><a href=""></a></span>
-<span id="cb2-9"><a href=""></a>        <span class="co"># rect: position and size on screen</span></span>
-<span id="cb2-10"><a href=""></a>        <span class="va">self</span>.rect <span class="op">=</span> <span class="va">self</span>.image.get_rect()</span>
-<span id="cb2-11"><a href=""></a>        <span class="va">self</span>.rect.topleft <span class="op">=</span> (x, y)   <span class="co"># Place on screen</span></span>
-<span id="cb2-12"><a href=""></a></span>
-<span id="cb2-13"><a href=""></a>        <span class="co"># Game-specific attributes</span></span>
-<span id="cb2-14"><a href=""></a>        <span class="va">self</span>.speed <span class="op">=</span> <span class="dv">4</span></span>
-<span id="cb2-15"><a href=""></a></span>
-<span id="cb2-16"><a href=""></a>    <span class="kw">def</span> update(<span class="va">self</span>):                <span class="co"># Called by the group every frame</span></span>
-<span id="cb2-17"><a href=""></a>        keys <span class="op">=</span> pygame.key.get_pressed()</span>
-<span id="cb2-18"><a href=""></a>        <span class="cf">if</span> keys[pygame.K_LEFT]:  <span class="va">self</span>.rect.x <span class="op">-=</span> <span class="va">self</span>.speed</span>
-<span id="cb2-19"><a href=""></a>        <span class="cf">if</span> keys[pygame.K_RIGHT]: <span class="va">self</span>.rect.x <span class="op">+=</span> <span class="va">self</span>.speed</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-9"><a href=""></a><span class="co"># Method 3: rect.collidelist() — against a list of rects</span></span>
+<span id="cb2-10"><a href=""></a>index <span class="op">=</span> player.rect.collidelist([rect1, rect2, rect3])</span>
+<span id="cb2-11"><a href=""></a><span class="co"># Returns the index of the first collided rect, or -1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="why-use-sprite-instead-of-loose-variables" class="slide level2">
-<h2>Why use Sprite instead of loose variables?</h2>
-<table class="caption-top">
-<colgroup>
-<col style="width: 55%">
-<col style="width: 44%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Without Sprite</th>
-<th>With Sprite</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>player_x</code>, <code>player_y</code>, <code>player_img</code>…</td>
-<td><code>player.rect.x</code>, <code>player.image</code></td>
-</tr>
-<tr class="even">
-<td>Logic scattered all over the code</td>
-<td>Encapsulated in the class</td>
-</tr>
-<tr class="odd">
-<td>Complicated manual collisions</td>
-<td>Automatic <code>spritecollide()</code></td>
-</tr>
-<tr class="even">
-<td>Drawing object by object</td>
-<td><code>group.draw(screen)</code></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="rect-properties" class="slide level2">
-<h2>Rect Properties</h2>
-<div id="60fd1a0c" class="cell" data-execution_count="1">
+<section id="rect-rect-collision-aabb-1" class="slide level2">
+<h2>Rect-Rect Collision (AABB)</h2>
+<p><strong>AABB</strong> = Axis-Aligned Bounding Box. The fastest and most commonly used method.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href=""></a><span class="co"># Method 1: rect.colliderect()</span></span>
+<span id="cb3-2"><a href=""></a><span class="cf">if</span> player.rect.colliderect(enemy.rect):</span>
+<span id="cb3-3"><a href=""></a>    <span class="bu">print</span>(<span class="st">"Collision!"</span>)</span>
+<span id="cb3-4"><a href=""></a></span>
+<span id="cb3-5"><a href=""></a><span class="co"># Method 2: rect.collidepoint() — point inside rect</span></span>
+<span id="cb3-6"><a href=""></a><span class="cf">if</span> player.rect.collidepoint(pygame.mouse.get_pos()):</span>
+<span id="cb3-7"><a href=""></a>    <span class="bu">print</span>(<span class="st">"Mouse is over the player"</span>)</span>
+<span id="cb3-8"><a href=""></a></span>
+<span id="cb3-9"><a href=""></a><span class="co"># Method 3: rect.collidelist() — against a list of rects</span></span>
+<span id="cb3-10"><a href=""></a>index <span class="op">=</span> player.rect.collidelist([rect1, rect2, rect3])</span>
+<span id="cb3-11"><a href=""></a><span class="co"># Returns the index of the first collided rect, or -1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<h3 id="manual-aabb-implementation">Manual AABB Implementation</h3>
+<div id="125f3aa1" class="cell" data-execution_count="1">
 <div class="cell-output cell-output-stdout">
-<pre><code>pygame.Rect properties:
-  rect.x, rect.y      = 100, 50        ← top-left corner
-  rect.width, height  = 48, 48       ← size
-  rect.center         = (124, 74)   ← center point
-  rect.topleft        = (100, 50)  ← alias for (x, y)
-  rect.topright       = (148, 50) ← top-right corner
-  rect.bottomleft     = (100, 98) ← bottom-left corner
-  rect.right          = 148       ← right edge
-  rect.bottom         = 98       ← bottom edge
+<pre><code>AABB Collision — tests:
+=======================================================
+  Partially overlapping                  → ✅ COLLISION
+  Separated horizontally                 → ❌ no collision
+  B fully inside A                       → ✅ COLLISION
+  Just touching (edge)                   → ✅ COLLISION
+  Separated by 1px                       → ❌ no collision</code></pre>
+</div>
+</div>
+</section>
+<section id="circle-circle-collision" class="slide level2">
+<h2>Circle-Circle Collision</h2>
+<p>More precise for round objects (bullets, coins, circular characters). The logic: two circles collide if the <strong>distance between their centers</strong> is less than the <strong>sum of their radii</strong>.</p>
+<pre><code>    A            B
+   (●)          (●)
+       ←── d ──→
 
-Move by assigning to any property:
-  rect.center = (400, 300)  → centers the sprite
-  rect.topright = (800, 0)  → top-right corner of the screen</code></pre>
+  If d &lt; rA + rB → collision</code></pre>
+</section>
+<section id="circle-circle-collision-1" class="slide level2">
+<h2>Circle-Circle Collision</h2>
+<p>More precise for round objects (bullets, coins, circular characters). The logic: two circles collide if the <strong>distance between their centers</strong> is less than the <strong>sum of their radii</strong>.</p>
+<pre><code>    A            B
+   (●)          (●)
+       ←── d ──→
+
+  If d &lt; rA + rB → collision</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href=""></a><span class="im">import</span> math</span>
+<span id="cb7-2"><a href=""></a></span>
+<span id="cb7-3"><a href=""></a><span class="kw">def</span> circle_collision(cx1, cy1, r1, cx2, cy2, r2):</span>
+<span id="cb7-4"><a href=""></a>    distance <span class="op">=</span> math.sqrt((cx2 <span class="op">-</span> cx1)<span class="op">**</span><span class="dv">2</span> <span class="op">+</span> (cy2 <span class="op">-</span> cy1)<span class="op">**</span><span class="dv">2</span>)</span>
+<span id="cb7-5"><a href=""></a>    <span class="cf">return</span> distance <span class="op">&lt;</span> r1 <span class="op">+</span> r2</span>
+<span id="cb7-6"><a href=""></a></span>
+<span id="cb7-7"><a href=""></a><span class="co"># Optimization: avoid sqrt using squared distance</span></span>
+<span id="cb7-8"><a href=""></a><span class="kw">def</span> circle_collision_fast(cx1, cy1, r1, cx2, cy2, r2):</span>
+<span id="cb7-9"><a href=""></a>    dx <span class="op">=</span> cx2 <span class="op">-</span> cx1</span>
+<span id="cb7-10"><a href=""></a>    dy <span class="op">=</span> cy2 <span class="op">-</span> cy1</span>
+<span id="cb7-11"><a href=""></a>    dist_sq <span class="op">=</span> dx<span class="op">*</span>dx <span class="op">+</span> dy<span class="op">*</span>dy</span>
+<span id="cb7-12"><a href=""></a>    <span class="cf">return</span> dist_sq <span class="op">&lt;</span> (r1 <span class="op">+</span> r2)<span class="op">**</span><span class="dv">2</span>   <span class="co"># No sqrt needed</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="spritecollide-group-collisions" class="slide level2">
+<h2>spritecollide() — Group Collisions</h2>
+<p>This is the most powerful collision function in Pygame.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href=""></a><span class="co"># Detect collision of ONE sprite against a GROUP</span></span>
+<span id="cb8-2"><a href=""></a>hits <span class="op">=</span> pygame.sprite.spritecollide(</span>
+<span id="cb8-3"><a href=""></a>    player,    <span class="co"># individual sprite</span></span>
+<span id="cb8-4"><a href=""></a>    bullets,   <span class="co"># group to check against</span></span>
+<span id="cb8-5"><a href=""></a>    <span class="va">True</span>       <span class="co"># True = remove colliding sprites from the group</span></span>
+<span id="cb8-6"><a href=""></a>)</span>
+<span id="cb8-7"><a href=""></a><span class="co"># hits is a list of sprites that collided</span></span>
+<span id="cb8-8"><a href=""></a><span class="cf">if</span> hits:</span>
+<span id="cb8-9"><a href=""></a>    health <span class="op">-=</span> <span class="bu">len</span>(hits)</span>
+<span id="cb8-10"><a href=""></a></span>
+<span id="cb8-11"><a href=""></a><span class="co"># Detect collisions between TWO GROUPS</span></span>
+<span id="cb8-12"><a href=""></a>clashes <span class="op">=</span> pygame.sprite.groupcollide(</span>
+<span id="cb8-13"><a href=""></a>    bullets,   <span class="co"># group 1</span></span>
+<span id="cb8-14"><a href=""></a>    enemies,   <span class="co"># group 2</span></span>
+<span id="cb8-15"><a href=""></a>    <span class="va">True</span>,      <span class="co"># remove from group 1</span></span>
+<span id="cb8-16"><a href=""></a>    <span class="va">True</span>       <span class="co"># remove from group 2</span></span>
+<span id="cb8-17"><a href=""></a>)</span>
+<span id="cb8-18"><a href=""></a><span class="co"># clashes is a dict: {bullet: [enemies_hit], ...}</span></span>
+<span id="cb8-19"><a href=""></a></span>
+<span id="cb8-20"><a href=""></a><span class="co"># Using circular collision (more precise)</span></span>
+<span id="cb8-21"><a href=""></a>hits <span class="op">=</span> pygame.sprite.spritecollide(</span>
+<span id="cb8-22"><a href=""></a>    player, bullets, <span class="va">True</span>,</span>
+<span id="cb8-23"><a href=""></a>    collided<span class="op">=</span>pygame.sprite.collide_circle</span>
+<span id="cb8-24"><a href=""></a>)</span>
+<span id="cb8-25"><a href=""></a></span>
+<span id="cb8-26"><a href=""></a><span class="co"># Using pixel masks (maximum precision, slowest)</span></span>
+<span id="cb8-27"><a href=""></a>hits <span class="op">=</span> pygame.sprite.spritecollide(</span>
+<span id="cb8-28"><a href=""></a>    player, bullets, <span class="va">True</span>,</span>
+<span id="cb8-29"><a href=""></a>    collided<span class="op">=</span>pygame.sprite.collide_mask</span>
+<span id="cb8-30"><a href=""></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="collision-response" class="slide level2">
+<h2>Collision Response</h2>
+<p>Detecting the collision is only half the job. The other half is <strong>what to do</strong> when it happens.</p>
+</section>
+<section id="collision-response-1" class="slide level2">
+<h2>Collision Response</h2>
+<p>Detecting the collision is only half the job. The other half is <strong>what to do</strong> when it happens.</p>
+<h3 id="pattern-1-separation-platforms-walls">Pattern 1 — Separation (platforms, walls)</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href=""></a><span class="co"># Move first, then correct</span></span>
+<span id="cb9-2"><a href=""></a>player.rect.x <span class="op">+=</span> vel_x</span>
+<span id="cb9-3"><a href=""></a><span class="cf">for</span> platform <span class="kw">in</span> platforms:</span>
+<span id="cb9-4"><a href=""></a>    <span class="cf">if</span> player.rect.colliderect(platform.rect):</span>
+<span id="cb9-5"><a href=""></a>        <span class="cf">if</span> vel_x <span class="op">&gt;</span> <span class="dv">0</span>:   <span class="co"># Moving right</span></span>
+<span id="cb9-6"><a href=""></a>            player.rect.right <span class="op">=</span> platform.rect.left</span>
+<span id="cb9-7"><a href=""></a>        <span class="cf">elif</span> vel_x <span class="op">&lt;</span> <span class="dv">0</span>: <span class="co"># Moving left</span></span>
+<span id="cb9-8"><a href=""></a>            player.rect.left <span class="op">=</span> platform.rect.right</span>
+<span id="cb9-9"><a href=""></a>        vel_x <span class="op">=</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="collision-response-2" class="slide level2">
+<h2>Collision Response</h2>
+<p>Detecting the collision is only half the job. The other half is <strong>what to do</strong> when it happens.</p>
+<h3 id="pattern-1-separation-platforms-walls-1">Pattern 1 — Separation (platforms, walls)</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href=""></a><span class="co"># Move first, then correct</span></span>
+<span id="cb10-2"><a href=""></a>player.rect.x <span class="op">+=</span> vel_x</span>
+<span id="cb10-3"><a href=""></a><span class="cf">for</span> platform <span class="kw">in</span> platforms:</span>
+<span id="cb10-4"><a href=""></a>    <span class="cf">if</span> player.rect.colliderect(platform.rect):</span>
+<span id="cb10-5"><a href=""></a>        <span class="cf">if</span> vel_x <span class="op">&gt;</span> <span class="dv">0</span>:   <span class="co"># Moving right</span></span>
+<span id="cb10-6"><a href=""></a>            player.rect.right <span class="op">=</span> platform.rect.left</span>
+<span id="cb10-7"><a href=""></a>        <span class="cf">elif</span> vel_x <span class="op">&lt;</span> <span class="dv">0</span>: <span class="co"># Moving left</span></span>
+<span id="cb10-8"><a href=""></a>            player.rect.left <span class="op">=</span> platform.rect.right</span>
+<span id="cb10-9"><a href=""></a>        vel_x <span class="op">=</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<h3 id="pattern-2-bounce-bullets-balls">Pattern 2 — Bounce (bullets, balls)</h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href=""></a><span class="cf">if</span> bullet.rect.left <span class="op">&lt;=</span> <span class="dv">0</span> <span class="kw">or</span> bullet.rect.right <span class="op">&gt;=</span> WIDTH:</span>
+<span id="cb11-2"><a href=""></a>    bullet.vel_x <span class="op">*=</span> <span class="op">-</span><span class="dv">1</span>   <span class="co"># Reverse horizontal velocity</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="collision-response-3" class="slide level2">
+<h2>Collision Response</h2>
+<p>Detecting the collision is only half the job. The other half is <strong>what to do</strong> when it happens.</p>
+<h3 id="pattern-1-separation-platforms-walls-2">Pattern 1 — Separation (platforms, walls)</h3>
+<div class="sourceCode" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href=""></a><span class="co"># Move first, then correct</span></span>
+<span id="cb12-2"><a href=""></a>player.rect.x <span class="op">+=</span> vel_x</span>
+<span id="cb12-3"><a href=""></a><span class="cf">for</span> platform <span class="kw">in</span> platforms:</span>
+<span id="cb12-4"><a href=""></a>    <span class="cf">if</span> player.rect.colliderect(platform.rect):</span>
+<span id="cb12-5"><a href=""></a>        <span class="cf">if</span> vel_x <span class="op">&gt;</span> <span class="dv">0</span>:   <span class="co"># Moving right</span></span>
+<span id="cb12-6"><a href=""></a>            player.rect.right <span class="op">=</span> platform.rect.left</span>
+<span id="cb12-7"><a href=""></a>        <span class="cf">elif</span> vel_x <span class="op">&lt;</span> <span class="dv">0</span>: <span class="co"># Moving left</span></span>
+<span id="cb12-8"><a href=""></a>            player.rect.left <span class="op">=</span> platform.rect.right</span>
+<span id="cb12-9"><a href=""></a>        vel_x <span class="op">=</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<h3 id="pattern-2-bounce-bullets-balls-1">Pattern 2 — Bounce (bullets, balls)</h3>
+<div class="sourceCode" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href=""></a><span class="cf">if</span> bullet.rect.left <span class="op">&lt;=</span> <span class="dv">0</span> <span class="kw">or</span> bullet.rect.right <span class="op">&gt;=</span> WIDTH:</span>
+<span id="cb13-2"><a href=""></a>    bullet.vel_x <span class="op">*=</span> <span class="op">-</span><span class="dv">1</span>   <span class="co"># Reverse horizontal velocity</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<h3 id="pattern-3-destruction-item-picked-up-enemy-eliminated">Pattern 3 — Destruction (item picked up, enemy eliminated)</h3>
+<div class="sourceCode" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href=""></a>items_picked <span class="op">=</span> pygame.sprite.spritecollide(player, items, <span class="va">True</span>)  <span class="co"># True = kill</span></span>
+<span id="cb14-2"><a href=""></a>score <span class="op">+=</span> <span class="bu">len</span>(items_picked) <span class="op">*</span> <span class="dv">10</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="collision-method-comparison" class="slide level2">
+<h2>Collision Method Comparison</h2>
+<div id="845aa3f8" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-stdout">
+<pre><code>Collision method comparison
+============================================================
+
+  Method                 Cost     Precision                  When to use
+  --------------------------------------------------------------------------------
+  AABB (Rect-Rect)       O(1)     Low — invisible box        Platforms, items, most objects
+  Circle-Circle          O(1)     Medium — circular          Bullets, coins, round characters
+  collide_rect_ratio     O(1)     Medium — shrunk rect       Hitbox smaller than the sprite
+  collide_mask           O(n)     Maximum — pixel by pixel   Bosses, irregular shapes (use sparingly)
+
+General rule: start with AABB. Switch only when the inaccuracy
+is noticeable. Reserve collide_mask for very few sprites.</code></pre>
 </div>
 </div>
 </section>
-<section id="sprite-groups" class="slide level2">
-<h2>Sprite Groups</h2>
-<p>A <code>pygame.sprite.Group</code> is a collection of sprites with built-in superpowers:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href=""></a>all_sprites <span class="op">=</span> pygame.sprite.Group()    <span class="co"># General group</span></span>
-<span id="cb4-2"><a href=""></a>bullets     <span class="op">=</span> pygame.sprite.Group()    <span class="co"># Specific group</span></span>
-<span id="cb4-3"><a href=""></a>enemies     <span class="op">=</span> pygame.sprite.Group()</span>
-<span id="cb4-4"><a href=""></a></span>
-<span id="cb4-5"><a href=""></a><span class="co"># Adding sprites</span></span>
-<span id="cb4-6"><a href=""></a>player <span class="op">=</span> Player(<span class="dv">400</span>, <span class="dv">300</span>)</span>
-<span id="cb4-7"><a href=""></a>all_sprites.add(player)</span>
-<span id="cb4-8"><a href=""></a>bullets.add(Bullet(<span class="dv">400</span>, <span class="dv">300</span>))</span>
-<span id="cb4-9"><a href=""></a></span>
-<span id="cb4-10"><a href=""></a><span class="co"># Inside the Game Loop:</span></span>
-<span id="cb4-11"><a href=""></a>all_sprites.update()          <span class="co"># Calls update() on ALL sprites</span></span>
-<span id="cb4-12"><a href=""></a>all_sprites.draw(screen)      <span class="co"># Draws ALL sprites at once</span></span>
-<span id="cb4-13"><a href=""></a></span>
-<span id="cb4-14"><a href=""></a><span class="co"># Remove a sprite from ALL its groups</span></span>
-<span id="cb4-15"><a href=""></a>sprite.kill()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>A sprite can belong to <strong>multiple groups</strong> at the same time.</p>
-</section>
-<section id="loading-images" class="slide level2">
-<h2>Loading Images</h2>
-<div class="sourceCode" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href=""></a><span class="co"># Load from file</span></span>
-<span id="cb5-2"><a href=""></a>image <span class="op">=</span> pygame.image.load(<span class="st">"player.png"</span>)</span>
-<span id="cb5-3"><a href=""></a></span>
-<span id="cb5-4"><a href=""></a><span class="co"># IMPORTANT: convert for better performance</span></span>
-<span id="cb5-5"><a href=""></a>image <span class="op">=</span> image.convert()         <span class="co"># No transparency</span></span>
-<span id="cb5-6"><a href=""></a>image <span class="op">=</span> image.convert_alpha()   <span class="co"># With transparency (PNG with alpha channel)</span></span>
-<span id="cb5-7"><a href=""></a></span>
-<span id="cb5-8"><a href=""></a><span class="co"># Make one color transparent (for sprites without an alpha channel)</span></span>
-<span id="cb5-9"><a href=""></a>image.set_colorkey((<span class="dv">255</span>, <span class="dv">0</span>, <span class="dv">255</span>))  <span class="co"># Magenta = transparent</span></span>
-<span id="cb5-10"><a href=""></a></span>
-<span id="cb5-11"><a href=""></a><span class="co"># Scale</span></span>
-<span id="cb5-12"><a href=""></a>image <span class="op">=</span> pygame.transform.scale(image, (<span class="dv">64</span>, <span class="dv">64</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="transparency-and-surfaces" class="slide level2">
-<h2>Transparency and Surfaces</h2>
-<p>Pygame has three levels of transparency:</p>
-<table class="caption-top">
-<colgroup>
-<col style="width: 22%">
-<col style="width: 40%">
-<col style="width: 37%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Method</th>
-<th>How it works</th>
-<th>Typical use</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>Surface.set_alpha(0-255)</code></td>
-<td>Global transparency of the whole Surface</td>
-<td>Fade in/out, HUDs</td>
-</tr>
-<tr class="even">
-<td><code>Surface.set_colorkey(color)</code></td>
-<td>One specific color becomes transparent</td>
-<td>Sprites without PNG alpha</td>
-</tr>
-<tr class="odd">
-<td><code>convert_alpha()</code> + PNG</td>
-<td>Per-pixel alpha channel</td>
-<td>Sprites with smooth edges</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="transparency-and-surfaces-1" class="slide level2">
-<h2>Transparency and Surfaces</h2>
-<p>Pygame has three levels of transparency:</p>
-<table class="caption-top">
-<colgroup>
-<col style="width: 22%">
-<col style="width: 40%">
-<col style="width: 37%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Method</th>
-<th>How it works</th>
-<th>Typical use</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>Surface.set_alpha(0-255)</code></td>
-<td>Global transparency of the whole Surface</td>
-<td>Fade in/out, HUDs</td>
-</tr>
-<tr class="even">
-<td><code>Surface.set_colorkey(color)</code></td>
-<td>One specific color becomes transparent</td>
-<td>Sprites without PNG alpha</td>
-</tr>
-<tr class="odd">
-<td><code>convert_alpha()</code> + PNG</td>
-<td>Per-pixel alpha channel</td>
-<td>Sprites with smooth edges</td>
-</tr>
-</tbody>
-</table>
-<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href=""></a><span class="co"># Semi-transparent surface</span></span>
-<span id="cb6-2"><a href=""></a>surf <span class="op">=</span> pygame.Surface((<span class="dv">200</span>, <span class="dv">100</span>))</span>
-<span id="cb6-3"><a href=""></a>surf.set_alpha(<span class="dv">128</span>)   <span class="co"># 0 = invisible, 255 = solid</span></span>
-<span id="cb6-4"><a href=""></a>surf.fill((<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>))  <span class="co"># Semi-transparent black overlay</span></span>
-<span id="cb6-5"><a href=""></a></span>
-<span id="cb6-6"><a href=""></a><span class="co"># Surface with per-pixel alpha support</span></span>
-<span id="cb6-7"><a href=""></a>surf <span class="op">=</span> pygame.Surface((<span class="dv">64</span>, <span class="dv">64</span>), pygame.SRCALPHA)</span>
-<span id="cb6-8"><a href=""></a><span class="co"># Now you can draw with (R, G, B, A) colors</span></span>
-<span id="cb6-9"><a href=""></a>pygame.draw.circle(surf, (<span class="dv">255</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">180</span>), (<span class="dv">32</span>, <span class="dv">32</span>), <span class="dv">30</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="sprite-summary" class="slide level2 unnumbered">
-<h2>Sprite — Summary</h2>
+<section id="collisions-summary" class="slide level2 unnumbered">
+<h2>Collisions — Summary</h2>
 <ul>
-<li><code>Sprite</code> = Base class — self.image and self.rect are mandatory</li>
-<li><code>Group</code> = Collection that handles update() and draw() for all sprites</li>
-<li><code>kill()</code> = Removes the sprite from all its groups (destroys it from the game)</li>
-<li><code>convert()</code> = Optimizes the image for the current display (better FPS)</li>
-<li><code>set_alpha</code> = Global transparency 0-255</li>
-<li><code>SRCALPHA</code> = Flag for a surface with per-pixel alpha channel</li>
+<li>AABB (<code>colliderect</code>) = fastest, sufficient for most cases</li>
+<li><code>spritecollide(sprite, group, kill)</code> = one vs.&nbsp;many collision</li>
+<li><code>groupcollide(g1, g2, k1, k2)</code> = group vs.&nbsp;group collision</li>
+<li>Response depends on type: separate, bounce, or destroy</li>
 </ul>
 
 </section></section>
