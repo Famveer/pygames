@@ -1,6 +1,8 @@
 ---
-title: "El Game Loop y la estructura de un juego"
-subtitle: "Curso de Desarrollo de Juegos con Pygame"
+title: "The Game Loop and the Structure of a Game"
+subtitle: "Game Development with Pygame Course"
+author: "Felipe A. Moreno-Vera"
+lang: en
 format:
   revealjs:
     slide-number: true
@@ -8,48 +10,31 @@ format:
       buttons: false
     preview-links: auto
     theme: dark
-    code-block-height: 400px
+    code-block-height: 380px
+    highlight-style: github-dark
+    fontsize: 30px
   html:
     allow-html: true
 ---
 
-## En este módulo vas a aprender
+## In this module you will learn
 
-- Qué es el **Game Loop** y por qué es el corazón de todo juego
-- Las **tres fases** que se repiten en cada frame
-- Cómo controlar los **FPS** con el Clock de Pygame
-- Cómo manejar **eventos de input** (teclado y mouse)
-- La estructura mínima de un juego funcional
-
-
-## 1. ¿Qué es el Game Loop?
-
-Todo juego, sin importar cuán simple o complejo, corre sobre un **ciclo que se repite sin parar** mientras el juego está activo. Este ciclo se llama **Game Loop**.
+- What the **Game Loop** is and why it is the heart of every game
+- The **three phases** that repeat every frame
+- How to control **FPS** with Pygame's Clock
+- How to handle **input events** (keyboard and mouse)
+- The minimal structure of a functional game
 
 
+## 1. What is the Game Loop?
 
-## 1. ¿Qué es el Game Loop?
-
-Todo juego, sin importar cuán simple o complejo, corre sobre un **ciclo que se repite sin parar** mientras el juego está activo. Este ciclo se llama **Game Loop**.
-
-```
-┌────────────────────────────────────────────────────┐
-│                   GAME LOOP                        │
-│                                                    │
-│   ┌──────────┐   ┌──────────┐   ┌──────────┐       │
-│   │  INPUT   │ → │  UPDATE  │ → │  RENDER  │ ──┐   │
-│   └──────────┘   └──────────┘   └──────────┘   │   │
-│         ↑                                      │   │
-│         └──────────────────────────────────────┘   │
-│                                                    │
-│   Se repite ~60 veces por segundo (60 FPS)         │
-└────────────────────────────────────────────────────┘
-```
+Every game, no matter how simple or complex, runs on a **cycle that repeats endlessly** while the game is active. This cycle is called the **Game Loop**.
 
 
-## 1. ¿Qué es el Game Loop?
 
-Todo juego, sin importar cuán simple o complejo, corre sobre un **ciclo que se repite sin parar** mientras el juego está activo. Este ciclo se llama **Game Loop**.
+## 1. What is the Game Loop?
+
+Every game, no matter how simple or complex, runs on a **cycle that repeats endlessly** while the game is active. This cycle is called the **Game Loop**.
 
 ```
 ┌────────────────────────────────────────────────────┐
@@ -61,92 +46,111 @@ Todo juego, sin importar cuán simple o complejo, corre sobre un **ciclo que se 
 │         ↑                                      │   │
 │         └──────────────────────────────────────┘   │
 │                                                    │
-│   Se repite ~60 veces por segundo (60 FPS)         │
+│   Repeats ~60 times per second (60 FPS)            │
 └────────────────────────────────────────────────────┘
 ```
 
-Cada iteración del loop se llama **frame** y produce una imagen en pantalla. A 60 FPS, da la ilusión de movimiento fluido — igual que un flipbook.
+
+## 1. What is the Game Loop?
+
+Every game, no matter how simple or complex, runs on a **cycle that repeats endlessly** while the game is active. This cycle is called the **Game Loop**.
+
+```
+┌────────────────────────────────────────────────────┐
+│                   GAME LOOP                        │
+│                                                    │
+│   ┌──────────┐   ┌──────────┐   ┌──────────┐       │
+│   │  INPUT   │ → │  UPDATE  │ → │  RENDER  │ ──┐   │
+│   └──────────┘   └──────────┘   └──────────┘   │   │
+│         ↑                                      │   │
+│         └──────────────────────────────────────┘   │
+│                                                    │
+│   Repeats ~60 times per second (60 FPS)            │
+└────────────────────────────────────────────────────┘
+```
+
+Each iteration of the loop is called a **frame** and produces one image on screen. At 60 FPS, it creates the illusion of smooth motion — just like a flipbook.
 
 
-## 2. Las tres fases del Game Loop
+## 2. The three phases of the Game Loop
 
-### Fase 1 — INPUT
+### Phase 1 — INPUT
 
-Detecta qué está haciendo el jugador:
+Detects what the player is doing:
 
-- Teclas presionadas o soltadas
-- Movimiento y clicks del mouse
-- El evento de cierre de ventana (`QUIT`)
+- Keys pressed or released
+- Mouse movement and clicks
+- The window close event (`QUIT`)
 
 ::: {.callout-warning}
-**Regla crítica:** Si no procesas los eventos en cada frame, la cola se llena y la ventana se congela.
+**Critical rule:** If you don't process events every frame, the queue fills up and the window freezes.
 :::
 
 
-## 2. Las tres fases del Game Loop
-### Fase 2 — UPDATE
+## 2. The three phases of the Game Loop
+### Phase 2 — UPDATE
 
-Toda la **lógica del juego** ocurre aquí:
+All **game logic** happens here:
 
-- Mover personajes y enemigos
-- Detectar colisiones
-- Actualizar puntaje y vidas
-- Aplicar física básica (gravedad, velocidad)
+- Moving characters and enemies
+- Detecting collisions
+- Updating score and lives
+- Applying basic physics (gravity, velocity)
 
 
-## 2. Las tres fases del Game Loop
-### Fase 3 — RENDER
+## 2. The three phases of the Game Loop
+### Phase 3 — RENDER
 
-Dibuja el estado actual en pantalla:
+Draws the current state on screen:
 
-1. Borra la pantalla con `fill()`
-2. Dibuja todos los objetos
-3. Muestra el frame con `pygame.display.flip()`
+1. Clear the screen with `fill()`
+2. Draw all objects
+3. Display the frame with `pygame.display.flip()`
 
 ::: {.callout-note}
-**¿Por qué borrar antes de dibujar?** Sin borrar, los objetos dejan "estelas" en pantalla porque los frames anteriores quedan visibles.
+**Why clear before drawing?** Without clearing, objects leave "trails" on screen because previous frames remain visible.
 :::
 
 
-## 3. Conceptos técnicos clave — FPS
+## 3. Key technical concepts — FPS
 
-Los FPS indican cuántas veces por segundo se ejecuta el Game Loop.
+FPS indicates how many times per second the Game Loop executes.
 
-| FPS | Percepción |
+| FPS | Perception |
 |-----|------------|
-| < 15 | Notoriamente entrecortado |
-| 30 | Jugable, estándar en consolas antiguas |
-| 60 | Fluido, estándar actual |
-| 120+ | Muy fluido, para monitores de alta frecuencia |
+| < 15 | Noticeably choppy |
+| 30 | Playable, standard on older consoles |
+| 60 | Smooth, current standard |
+| 120+ | Very smooth, for high-refresh-rate monitors |
 
-**Sin control de FPS**, el juego corre tan rápido como el CPU permita — el mismo juego correría a velocidades completamente distintas en hardware diferente.
+**Without FPS control**, the game runs as fast as the CPU allows — the same game would run at completely different speeds on different hardware.
 
 
 ## Double Buffering
 
-Pygame usa dos buffers de imagen:
+Pygame uses two image buffers:
 
-- **Back buffer:** donde dibujas (no visible)
-- **Front buffer:** lo que ve el usuario
+- **Back buffer:** where you draw (not visible)
+- **Front buffer:** what the user sees
 
-`pygame.display.flip()` intercambia ambos buffers. Esto evita el **tearing** (ver un frame a medio dibujar).
-
-
-## Dos formas de capturar input
-
-| Método | Cuándo dispara | Uso típico |
-|--------|---------------|------------|
-| `pygame.event.get()` | Una vez al presionar | Saltar, disparar, abrir menú |
-| `pygame.key.get_pressed()` | Cada frame mientras esté sostenida | Mover personaje |
-
-## Dos formas de capturar input
-
-**Error común:** usar `KEYDOWN` para movimiento. El personaje se mueve un paso, para, y recién después empieza a moverse fluido (el delay es del SO). La solución es `get_pressed()` para movimiento continuo.
+`pygame.display.flip()` swaps both buffers. This prevents **tearing** (seeing a half-drawn frame).
 
 
-## 4. Sistema de coordenadas en Pygame
+## Two ways to capture input
 
-El origen `(0, 0)` está en la esquina **superior izquierda**, y el eje Y crece hacia **abajo**.
+| Method | When it fires | Typical use |
+|--------|---------------|-------------|
+| `pygame.event.get()` | Once when pressed | Jump, shoot, open menu |
+| `pygame.key.get_pressed()` | Every frame while held | Move character |
+
+## Two ways to capture input
+
+**Common mistake:** using `KEYDOWN` for movement. The character moves one step, stops, and only then starts moving smoothly (the delay comes from the OS). The solution is `get_pressed()` for continuous movement.
+
+
+## 4. Pygame's coordinate system
+
+The origin `(0, 0)` is at the **top-left** corner, and the Y axis grows **downward**.
 
 ```
 (0,0) ──────────────────→ X+
@@ -159,9 +163,9 @@ El origen `(0, 0)` está en la esquina **superior izquierda**, y el eje Y crece 
 ```
 
 
-## 4. Sistema de coordenadas en Pygame
+## 4. Pygame's coordinate system
 
-El origen `(0, 0)` está en la esquina **superior izquierda**, y el eje Y crece hacia **abajo**.
+The origin `(0, 0)` is at the **top-left** corner, and the Y axis grows **downward**.
 
 ```
 (0,0) ──────────────────→ X+
@@ -174,196 +178,196 @@ El origen `(0, 0)` está en la esquina **superior izquierda**, y el eje Y crece 
 ```
 
 ::: {.callout-important}
-Para mover un objeto **hacia arriba** en pantalla, hay que **restarle** a Y. Esto es diferente a la matemática convencional donde Y crece hacia arriba.
+To move an object **upward** on screen, you must **subtract** from Y. This differs from conventional math where Y grows upward.
 :::
 
 
-## 5. Estructura del código
+## 5. Code structure
 
-Todo juego en Pygame sigue esta estructura:
+Every Pygame game follows this structure:
 
 ```python
 import pygame
 import sys
 
-# ── BLOQUE 1: Inicialización ──────────────────────────────
+# ── BLOCK 1: Initialization ───────────────────────────────
 pygame.init()
 
-ANCHO, ALTO = 800, 600
-FPS = 60
-NEGRO  = (0, 0, 0)
-BLANCO = (255, 255, 255)
-AZUL   = (50, 120, 220)
+WIDTH, HEIGHT = 800, 600
+FPS   = 60
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+BLUE  = (50, 120, 220)
 
-pantalla = pygame.display.set_mode((ANCHO, ALTO))
-pygame.display.set_caption("Módulo 1 — Game Loop")
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Module 1 — Game Loop")
 clock = pygame.time.Clock()
 ```
 
 
-## Estructura del código (cont.)
+## Code structure (cont.)
 
 ```python
-# ── BLOQUE 2: Estado inicial ──────────────────────────────
-x, y = ANCHO // 2, ALTO // 2
-velocidad = 4
+# ── BLOCK 2: Initial state ────────────────────────────────
+x, y = WIDTH // 2, HEIGHT // 2
+speed = 4
 
-# ── BLOQUE 3: Game Loop ───────────────────────────────────
+# ── BLOCK 3: Game Loop ────────────────────────────────────
 while True:
 
-    # FASE 1 — INPUT
-    for evento in pygame.event.get():
-        if evento.type == pygame.QUIT:
+    # PHASE 1 — INPUT
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
 
-    teclas = pygame.key.get_pressed()
-    if teclas[pygame.K_LEFT]:  x -= velocidad
-    if teclas[pygame.K_RIGHT]: x += velocidad
-    if teclas[pygame.K_UP]:    y -= velocidad
-    if teclas[pygame.K_DOWN]:  y += velocidad
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:  x -= speed
+    if keys[pygame.K_RIGHT]: x += speed
+    if keys[pygame.K_UP]:    y -= speed
+    if keys[pygame.K_DOWN]:  y += speed
 
-    # FASE 2 — UPDATE
-    x = max(0, min(x, ANCHO - 40))
-    y = max(0, min(y, ALTO - 40))
+    # PHASE 2 — UPDATE
+    x = max(0, min(x, WIDTH - 40))
+    y = max(0, min(y, HEIGHT - 40))
 
-    # FASE 3 — RENDER
-    pantalla.fill(NEGRO)
-    pygame.draw.rect(pantalla, AZUL, (x, y, 40, 40))
+    # PHASE 3 — RENDER
+    screen.fill(BLACK)
+    pygame.draw.rect(screen, BLUE, (x, y, 40, 40))
     pygame.display.flip()
 
     clock.tick(FPS)
 ```
 
 
-## 6. Eventos disponibles en Pygame
+## 6. Available events in Pygame
 
-| Evento | Descripción |
-|--------|-------------|
-| `pygame.QUIT` | Click en la X de la ventana |
-| `pygame.KEYDOWN` | Tecla recién presionada |
-| `pygame.KEYUP` | Tecla soltada |
-| `pygame.MOUSEBUTTONDOWN` | Botón del mouse presionado |
-| `pygame.MOUSEBUTTONUP` | Botón del mouse soltado |
-| `pygame.MOUSEMOTION` | Mouse movido (incluye posición y delta) |
-| `pygame.MOUSEWHEEL` | Scroll del mouse |
+| Event | Description |
+|-------|-------------|
+| `pygame.QUIT` | Click on the window's X button |
+| `pygame.KEYDOWN` | Key just pressed |
+| `pygame.KEYUP` | Key released |
+| `pygame.MOUSEBUTTONDOWN` | Mouse button pressed |
+| `pygame.MOUSEBUTTONUP` | Mouse button released |
+| `pygame.MOUSEMOTION` | Mouse moved (includes position and delta) |
+| `pygame.MOUSEWHEEL` | Mouse scroll |
 
 
-## Teclas más usadas en juegos
+## Most commonly used keys in games
 
-| Categoría | Teclas |
-|-----------|--------|
-| Movimiento | `K_LEFT`, `K_RIGHT`, `K_UP`, `K_DOWN` |
-| Acciones | `K_SPACE`, `K_RETURN`, `K_ESCAPE` |
-| Letras | `K_a` ... `K_z` |
-| Números | `K_0` ... `K_9` |
-| Modificadores | `K_LSHIFT`, `K_RSHIFT`, `K_LCTRL`, `K_RCTRL` |
+| Category | Keys |
+|----------|------|
+| Movement | `K_LEFT`, `K_RIGHT`, `K_UP`, `K_DOWN` |
+| Actions | `K_SPACE`, `K_RETURN`, `K_ESCAPE` |
+| Letters | `K_a` ... `K_z` |
+| Numbers | `K_0` ... `K_9` |
+| Modifiers | `K_LSHIFT`, `K_RSHIFT`, `K_LCTRL`, `K_RCTRL` |
 
-Todas son constantes del módulo `pygame`.
+All are constants from the `pygame` module.
 
 
 ## 7. Input: event vs get_pressed
 
-**`KEYDOWN` (event):** dispara una sola vez al presionar
+**`KEYDOWN` (event):** fires only once when pressed
 
 ```
-Frame 0: KEYDOWN detectado → el personaje se mueve 1 vez
-Frame 1: sin evento (la tecla sigue presionada pero nada pasa)
-Frame 2: sin evento
+Frame 0: KEYDOWN detected → character moves 1 time
+Frame 1: no event (key still held but nothing happens)
+Frame 2: no event
 ...
 ```
 
-**`get_pressed()`:** dispara CADA frame mientras la tecla esté sostenida
+**`get_pressed()`:** fires EVERY frame while the key is held
 
 ```
-Frame 0: get_pressed → el personaje se mueve (movimiento fluido)
-Frame 1: get_pressed → el personaje se mueve (movimiento fluido)
-Frame 2: get_pressed → el personaje se mueve (movimiento fluido)
+Frame 0: get_pressed → character moves (smooth movement)
+Frame 1: get_pressed → character moves (smooth movement)
+Frame 2: get_pressed → character moves (smooth movement)
 ...
 ```
 
 ::: {.callout-tip}
-Usa `KEYDOWN` para acciones únicas (saltar, disparar) y `get_pressed()` para movimiento continuo.
+Use `KEYDOWN` for single actions (jump, shoot) and `get_pressed()` for continuous movement.
 :::
 
 
-## 8. El Clock y los FPS
+## 8. The Clock and FPS
 
-El `Clock` de Pygame limita cuán rápido corre el game loop.
+Pygame's `Clock` limits how fast the game loop runs.
 
 ```python
 import time
 
-def simular_clock_tick(fps_objetivo, frames=5):
+def simulate_clock_tick(target_fps, frames=5):
     """
-    Simula cómo clock.tick(fps) controla la velocidad del loop.
-    En Pygame, clock.tick(60) bloquea hasta que haya pasado 1/60 segundos.
+    Simulates how clock.tick(fps) controls the loop speed.
+    In Pygame, clock.tick(60) blocks until 1/60 seconds have passed.
     """
-    duracion_frame = 1.0 / fps_objetivo  # segundos por frame
+    frame_duration = 1.0 / target_fps  # seconds per frame
 
     for i in range(frames):
-        inicio = time.time()
+        start = time.time()
 
-        time.sleep(0.002)  # Simula 2ms de trabajo del juego
+        time.sleep(0.002)  # Simulates 2ms of game work
 
-        tiempo_trabajado = time.time() - inicio
-        espera = duracion_frame - tiempo_trabajado
-        if espera > 0:
-            time.sleep(espera)
+        work_time = time.time() - start
+        wait = frame_duration - work_time
+        if wait > 0:
+            time.sleep(wait)
 
-        tiempo_total = time.time() - inicio
-        fps_real = 1.0 / tiempo_total
-        print(f"Frame {i+1}: trabajo={tiempo_trabajado*1000:.1f}ms, "
-              f"espera={espera*1000:.1f}ms, FPS real≈{fps_real:.0f}")
+        total_time = time.time() - start
+        real_fps = 1.0 / total_time
+        print(f"Frame {i+1}: work={work_time*1000:.1f}ms, "
+              f"wait={wait*1000:.1f}ms, real FPS≈{real_fps:.0f}")
 
-simular_clock_tick(fps_objetivo=30, frames=4)
+simulate_clock_tick(target_fps=30, frames=4)
 ```
 
 
-## 9. Sistema de coordenadas — ejercicio
+## 9. Coordinate system — exercise
 
-Calcula las coordenadas para ubicar objetos en distintas posiciones de la pantalla.
+Calculate the coordinates to place objects at different positions on screen.
 
 ```python
-ANCHO = 800
-ALTO  = 600
-TAM   = 40   # Tamaño del objeto
+WIDTH  = 800
+HEIGHT = 600
+SIZE   = 40   # Object size
 
-posiciones = {
-    'Esquina superior izquierda': (0, 0),
-    'Esquina superior derecha':   (ANCHO - TAM, 0),
-    'Esquina inferior izquierda': (0, ALTO - TAM),
-    'Esquina inferior derecha':   (ANCHO - TAM, ALTO - TAM),
-    'Centro exacto':              (ANCHO // 2 - TAM // 2, ALTO // 2 - TAM // 2),
-    'Centro horizontal, arriba':  (ANCHO // 2 - TAM // 2, 20),
+positions = {
+    'Top-left corner':      (0, 0),
+    'Top-right corner':     (WIDTH - SIZE, 0),
+    'Bottom-left corner':   (0, HEIGHT - SIZE),
+    'Bottom-right corner':  (WIDTH - SIZE, HEIGHT - SIZE),
+    'Exact center':         (WIDTH // 2 - SIZE // 2, HEIGHT // 2 - SIZE // 2),
+    'Horizontal center, top': (WIDTH // 2 - SIZE // 2, 20),
 }
 
-for nombre, coords in posiciones.items():
-    print(f"  {nombre:<35} → {coords}")
+for name, coords in positions.items():
+    print(f"  {name:<35} → {coords}")
 ```
 
 
-## Resumen del módulo
+## Summary
 
 ::: columns
 ::: {.column width="50%"}
-**Conceptos clave:**
+**Key concepts:**
 
-- El **Game Loop** es el corazón de todo juego
-- Tres fases: **INPUT → UPDATE → RENDER**
-- **FPS** controla la velocidad del loop
-- **Double Buffering** evita el tearing
+- The **Game Loop** is the heart of every game
+- Three phases: **INPUT → UPDATE → RENDER**
+- **FPS** controls the loop speed
+- **Double Buffering** prevents tearing
 :::
 
 ::: {.column width="50%"}
 **Input:**
 
-- `event.get()` → acciones únicas
-- `get_pressed()` → movimiento continuo
+- `event.get()` → single actions
+- `get_pressed()` → continuous movement
 
-**Coordenadas:**
+**Coordinates:**
 
-- Origen en esquina **superior izquierda**
-- Eje Y crece hacia **abajo**
+- Origin at the **top-left** corner
+- Y axis grows **downward**
 :::
 :::

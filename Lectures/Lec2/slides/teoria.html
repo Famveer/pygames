@@ -6,10 +6,11 @@
 <script src="teoria_files/libs/quarto-html/tippy.umd.min.js"></script>
 <link href="teoria_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="teoria_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="teoria_files/libs/quarto-html/quarto-syntax-highlighting-dark-b53751a350365c71b6c909e95f209ed1.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+<link href="teoria_files/libs/quarto-html/quarto-syntax-highlighting-dark-9a023c9ade86a60361e96e3e3f11bc54.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.6.42">
 
-  <title>El Game Loop y la estructura de un juego</title>
+  <meta name="author" content="Felipe A. Moreno-Vera">
+  <title>The Game Loop and the Structure of a Game</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -57,43 +58,43 @@
       }
     pre.numberSource { margin-left: 3em;  padding-left: 4px; }
     div.sourceCode
-      { color: #f8f8f2;  }
+      { color: #e1e4e8; background-color: #24292e; }
     @media screen {
     pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
     }
-    code span { color: #f8f8f2; } /* Normal */
-    code span.al { color: #f07178; background-color: #2a0f15; font-weight: bold; } /* Alert */
-    code span.an { color: #d4d0ab; } /* Annotation */
-    code span.at { color: #00e0e0; } /* Attribute */
-    code span.bn { color: #d4d0ab; } /* BaseN */
-    code span.bu { color: #abe338; } /* BuiltIn */
-    code span.cf { color: #ffa07a; font-weight: bold; } /* ControlFlow */
-    code span.ch { color: #abe338; } /* Char */
-    code span.cn { color: #ffd700; } /* Constant */
-    code span.co { color: #f8f8f2; font-style: italic; } /* Comment */
-    code span.cv { color: #ffd700; } /* CommentVar */
-    code span.do { color: #f8f8f2; } /* Documentation */
-    code span.dt { color: #ffa07a; } /* DataType */
-    code span.dv { color: #d4d0ab; } /* DecVal */
-    code span.er { color: #f07178; text-decoration: underline; } /* Error */
-    code span.ex { color: #00e0e0; font-weight: bold; } /* Extension */
-    code span.fl { color: #d4d0ab; } /* Float */
-    code span.fu { color: #ffa07a; } /* Function */
-    code span.im { color: #abe338; } /* Import */
-    code span.in { color: #d4d0ab; } /* Information */
-    code span.kw { color: #ffa07a; font-weight: bold; } /* Keyword */
-    code span.op { color: #ffa07a; } /* Operator */
-    code span.ot { color: #00e0e0; } /* Other */
-    code span.pp { color: #dcc6e0; } /* Preprocessor */
-    code span.re { color: #00e0e0; background-color: #f8f8f2; } /* RegionMarker */
-    code span.sc { color: #abe338; } /* SpecialChar */
-    code span.ss { color: #abe338; } /* SpecialString */
-    code span.st { color: #abe338; } /* String */
-    code span.va { color: #00e0e0; } /* Variable */
-    code span.vs { color: #abe338; } /* VerbatimString */
-    code span.wa { color: #dcc6e0; } /* Warning */
+    code span { color: #e1e4e8; } /* Normal */
+    code span.al { color: #ff5555; font-weight: bold; } /* Alert */
+    code span.an { color: #6a737d; } /* Annotation */
+    code span.at { color: #f97583; } /* Attribute */
+    code span.bn { color: #79b8ff; } /* BaseN */
+    code span.bu { color: #f97583; } /* BuiltIn */
+    code span.cf { color: #f97583; } /* ControlFlow */
+    code span.ch { color: #9ecbff; } /* Char */
+    code span.cn { color: #79b8ff; } /* Constant */
+    code span.co { color: #6a737d; } /* Comment */
+    code span.cv { color: #6a737d; } /* CommentVar */
+    code span.do { color: #6a737d; } /* Documentation */
+    code span.dt { color: #f97583; } /* DataType */
+    code span.dv { color: #79b8ff; } /* DecVal */
+    code span.er { color: #ff5555; text-decoration: underline; } /* Error */
+    code span.ex { color: #f97583; font-weight: bold; } /* Extension */
+    code span.fl { color: #79b8ff; } /* Float */
+    code span.fu { color: #b392f0; } /* Function */
+    code span.im { color: #9ecbff; } /* Import */
+    code span.in { color: #6a737d; } /* Information */
+    code span.kw { color: #f97583; } /* Keyword */
+    code span.op { color: #e1e4e8; } /* Operator */
+    code span.ot { color: #b392f0; } /* Other */
+    code span.pp { color: #f97583; } /* Preprocessor */
+    code span.re { color: #6a737d; } /* RegionMarker */
+    code span.sc { color: #79b8ff; } /* SpecialChar */
+    code span.ss { color: #9ecbff; } /* SpecialString */
+    code span.st { color: #9ecbff; } /* String */
+    code span.va { color: #ffab70; } /* Variable */
+    code span.vs { color: #9ecbff; } /* VerbatimString */
+    code span.wa { color: #ff5555; } /* Warning */
   </style>
-  <link rel="stylesheet" href="teoria_files/libs/revealjs/dist/theme/quarto-2bc88e5595faa4e4cc1594be82d687f8.css">
+  <link rel="stylesheet" href="teoria_files/libs/revealjs/dist/theme/quarto-939dac980516321e8ca7f2ac425f5b62.css">
   <link href="teoria_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="teoria_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
   <link href="teoria_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
@@ -193,30 +194,35 @@
     <div class="slides">
 
 <section id="title-slide" class="quarto-title-block center">
-  <h1 class="title">El Game Loop y la estructura de un juego</h1>
-  <p class="subtitle">Curso de Desarrollo de Juegos con Pygame</p>
+  <h1 class="title">The Game Loop and the Structure of a Game</h1>
+  <p class="subtitle">Game Development with Pygame Course</p>
 
 <div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+Felipe A. Moreno-Vera 
+</div>
+</div>
 </div>
 
 </section>
-<section id="en-este-módulo-vas-a-aprender" class="slide level2">
-<h2>En este módulo vas a aprender</h2>
+<section id="in-this-module-you-will-learn" class="slide level2">
+<h2>In this module you will learn</h2>
 <ul>
-<li>Qué es el <strong>Game Loop</strong> y por qué es el corazón de todo juego</li>
-<li>Las <strong>tres fases</strong> que se repiten en cada frame</li>
-<li>Cómo controlar los <strong>FPS</strong> con el Clock de Pygame</li>
-<li>Cómo manejar <strong>eventos de input</strong> (teclado y mouse)</li>
-<li>La estructura mínima de un juego funcional</li>
+<li>What the <strong>Game Loop</strong> is and why it is the heart of every game</li>
+<li>The <strong>three phases</strong> that repeat every frame</li>
+<li>How to control <strong>FPS</strong> with Pygame’s Clock</li>
+<li>How to handle <strong>input events</strong> (keyboard and mouse)</li>
+<li>The minimal structure of a functional game</li>
 </ul>
 </section>
-<section id="qué-es-el-game-loop" class="slide level2">
-<h2>1. ¿Qué es el Game Loop?</h2>
-<p>Todo juego, sin importar cuán simple o complejo, corre sobre un <strong>ciclo que se repite sin parar</strong> mientras el juego está activo. Este ciclo se llama <strong>Game Loop</strong>.</p>
+<section id="what-is-the-game-loop" class="slide level2">
+<h2>1. What is the Game Loop?</h2>
+<p>Every game, no matter how simple or complex, runs on a <strong>cycle that repeats endlessly</strong> while the game is active. This cycle is called the <strong>Game Loop</strong>.</p>
 </section>
-<section id="qué-es-el-game-loop-1" class="slide level2">
-<h2>1. ¿Qué es el Game Loop?</h2>
-<p>Todo juego, sin importar cuán simple o complejo, corre sobre un <strong>ciclo que se repite sin parar</strong> mientras el juego está activo. Este ciclo se llama <strong>Game Loop</strong>.</p>
+<section id="what-is-the-game-loop-1" class="slide level2">
+<h2>1. What is the Game Loop?</h2>
+<p>Every game, no matter how simple or complex, runs on a <strong>cycle that repeats endlessly</strong> while the game is active. This cycle is called the <strong>Game Loop</strong>.</p>
 <pre><code>┌────────────────────────────────────────────────────┐
 │                   GAME LOOP                        │
 │                                                    │
@@ -226,12 +232,12 @@
 │         ↑                                      │   │
 │         └──────────────────────────────────────┘   │
 │                                                    │
-│   Se repite ~60 veces por segundo (60 FPS)         │
+│   Repeats ~60 times per second (60 FPS)            │
 └────────────────────────────────────────────────────┘</code></pre>
 </section>
-<section id="qué-es-el-game-loop-2" class="slide level2">
-<h2>1. ¿Qué es el Game Loop?</h2>
-<p>Todo juego, sin importar cuán simple o complejo, corre sobre un <strong>ciclo que se repite sin parar</strong> mientras el juego está activo. Este ciclo se llama <strong>Game Loop</strong>.</p>
+<section id="what-is-the-game-loop-2" class="slide level2">
+<h2>1. What is the Game Loop?</h2>
+<p>Every game, no matter how simple or complex, runs on a <strong>cycle that repeats endlessly</strong> while the game is active. This cycle is called the <strong>Game Loop</strong>.</p>
 <pre><code>┌────────────────────────────────────────────────────┐
 │                   GAME LOOP                        │
 │                                                    │
@@ -241,18 +247,18 @@
 │         ↑                                      │   │
 │         └──────────────────────────────────────┘   │
 │                                                    │
-│   Se repite ~60 veces por segundo (60 FPS)         │
+│   Repeats ~60 times per second (60 FPS)            │
 └────────────────────────────────────────────────────┘</code></pre>
-<p>Cada iteración del loop se llama <strong>frame</strong> y produce una imagen en pantalla. A 60 FPS, da la ilusión de movimiento fluido — igual que un flipbook.</p>
+<p>Each iteration of the loop is called a <strong>frame</strong> and produces one image on screen. At 60 FPS, it creates the illusion of smooth motion — just like a flipbook.</p>
 </section>
-<section id="las-tres-fases-del-game-loop" class="slide level2">
-<h2>2. Las tres fases del Game Loop</h2>
-<h3 id="fase-1-input">Fase 1 — INPUT</h3>
-<p>Detecta qué está haciendo el jugador:</p>
+<section id="the-three-phases-of-the-game-loop" class="slide level2">
+<h2>2. The three phases of the Game Loop</h2>
+<h3 id="phase-1-input">Phase 1 — INPUT</h3>
+<p>Detects what the player is doing:</p>
 <ul>
-<li>Teclas presionadas o soltadas</li>
-<li>Movimiento y clicks del mouse</li>
-<li>El evento de cierre de ventana (<code>QUIT</code>)</li>
+<li>Keys pressed or released</li>
+<li>Mouse movement and clicks</li>
+<li>The window close event (<code>QUIT</code>)</li>
 </ul>
 <div class="callout callout-warning callout-titled callout-style-default">
 <div class="callout-body">
@@ -263,30 +269,30 @@
 <p><strong>Warning</strong></p>
 </div>
 <div class="callout-content">
-<p><strong>Regla crítica:</strong> Si no procesas los eventos en cada frame, la cola se llena y la ventana se congela.</p>
+<p><strong>Critical rule:</strong> If you don’t process events every frame, the queue fills up and the window freezes.</p>
 </div>
 </div>
 </div>
 </section>
-<section id="las-tres-fases-del-game-loop-1" class="slide level2">
-<h2>2. Las tres fases del Game Loop</h2>
-<h3 id="fase-2-update">Fase 2 — UPDATE</h3>
-<p>Toda la <strong>lógica del juego</strong> ocurre aquí:</p>
+<section id="the-three-phases-of-the-game-loop-1" class="slide level2">
+<h2>2. The three phases of the Game Loop</h2>
+<h3 id="phase-2-update">Phase 2 — UPDATE</h3>
+<p>All <strong>game logic</strong> happens here:</p>
 <ul>
-<li>Mover personajes y enemigos</li>
-<li>Detectar colisiones</li>
-<li>Actualizar puntaje y vidas</li>
-<li>Aplicar física básica (gravedad, velocidad)</li>
+<li>Moving characters and enemies</li>
+<li>Detecting collisions</li>
+<li>Updating score and lives</li>
+<li>Applying basic physics (gravity, velocity)</li>
 </ul>
 </section>
-<section id="las-tres-fases-del-game-loop-2" class="slide level2">
-<h2>2. Las tres fases del Game Loop</h2>
-<h3 id="fase-3-render">Fase 3 — RENDER</h3>
-<p>Dibuja el estado actual en pantalla:</p>
+<section id="the-three-phases-of-the-game-loop-2" class="slide level2">
+<h2>2. The three phases of the Game Loop</h2>
+<h3 id="phase-3-render">Phase 3 — RENDER</h3>
+<p>Draws the current state on screen:</p>
 <ol type="1">
-<li>Borra la pantalla con <code>fill()</code></li>
-<li>Dibuja todos los objetos</li>
-<li>Muestra el frame con <code>pygame.display.flip()</code></li>
+<li>Clear the screen with <code>fill()</code></li>
+<li>Draw all objects</li>
+<li>Display the frame with <code>pygame.display.flip()</code></li>
 </ol>
 <div class="callout callout-note callout-titled callout-style-default">
 <div class="callout-body">
@@ -297,87 +303,82 @@
 <p><strong>Note</strong></p>
 </div>
 <div class="callout-content">
-<p><strong>¿Por qué borrar antes de dibujar?</strong> Sin borrar, los objetos dejan “estelas” en pantalla porque los frames anteriores quedan visibles.</p>
+<p><strong>Why clear before drawing?</strong> Without clearing, objects leave “trails” on screen because previous frames remain visible.</p>
 </div>
 </div>
 </div>
 </section>
-<section id="conceptos-técnicos-clave-fps" class="slide level2">
-<h2>3. Conceptos técnicos clave — FPS</h2>
-<p>Los FPS indican cuántas veces por segundo se ejecuta el Game Loop.</p>
+<section id="key-technical-concepts-fps" class="slide level2">
+<h2>3. Key technical concepts — FPS</h2>
+<p>FPS indicates how many times per second the Game Loop executes.</p>
 <table class="caption-top">
 <thead>
 <tr class="header">
 <th>FPS</th>
-<th>Percepción</th>
+<th>Perception</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>&lt; 15</td>
-<td>Notoriamente entrecortado</td>
+<td>Noticeably choppy</td>
 </tr>
 <tr class="even">
 <td>30</td>
-<td>Jugable, estándar en consolas antiguas</td>
+<td>Playable, standard on older consoles</td>
 </tr>
 <tr class="odd">
 <td>60</td>
-<td>Fluido, estándar actual</td>
+<td>Smooth, current standard</td>
 </tr>
 <tr class="even">
 <td>120+</td>
-<td>Muy fluido, para monitores de alta frecuencia</td>
+<td>Very smooth, for high-refresh-rate monitors</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Sin control de FPS</strong>, el juego corre tan rápido como el CPU permita — el mismo juego correría a velocidades completamente distintas en hardware diferente.</p>
+<p><strong>Without FPS control</strong>, the game runs as fast as the CPU allows — the same game would run at completely different speeds on different hardware.</p>
 </section>
 <section id="double-buffering" class="slide level2">
 <h2>Double Buffering</h2>
-<p>Pygame usa dos buffers de imagen:</p>
+<p>Pygame uses two image buffers:</p>
 <ul>
-<li><strong>Back buffer:</strong> donde dibujas (no visible)</li>
-<li><strong>Front buffer:</strong> lo que ve el usuario</li>
+<li><strong>Back buffer:</strong> where you draw (not visible)</li>
+<li><strong>Front buffer:</strong> what the user sees</li>
 </ul>
-<p><code>pygame.display.flip()</code> intercambia ambos buffers. Esto evita el <strong>tearing</strong> (ver un frame a medio dibujar).</p>
+<p><code>pygame.display.flip()</code> swaps both buffers. This prevents <strong>tearing</strong> (seeing a half-drawn frame).</p>
 </section>
-<section id="dos-formas-de-capturar-input" class="slide level2">
-<h2>Dos formas de capturar input</h2>
+<section id="two-ways-to-capture-input" class="slide level2">
+<h2>Two ways to capture input</h2>
 <table class="caption-top">
-<colgroup>
-<col style="width: 22%">
-<col style="width: 42%">
-<col style="width: 34%">
-</colgroup>
 <thead>
 <tr class="header">
-<th>Método</th>
-<th>Cuándo dispara</th>
-<th>Uso típico</th>
+<th>Method</th>
+<th>When it fires</th>
+<th>Typical use</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td><code>pygame.event.get()</code></td>
-<td>Una vez al presionar</td>
-<td>Saltar, disparar, abrir menú</td>
+<td>Once when pressed</td>
+<td>Jump, shoot, open menu</td>
 </tr>
 <tr class="even">
 <td><code>pygame.key.get_pressed()</code></td>
-<td>Cada frame mientras esté sostenida</td>
-<td>Mover personaje</td>
+<td>Every frame while held</td>
+<td>Move character</td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="dos-formas-de-capturar-input-1" class="slide level2">
-<h2>Dos formas de capturar input</h2>
-<p><strong>Error común:</strong> usar <code>KEYDOWN</code> para movimiento. El personaje se mueve un paso, para, y recién después empieza a moverse fluido (el delay es del SO). La solución es <code>get_pressed()</code> para movimiento continuo.</p>
+<section id="two-ways-to-capture-input-1" class="slide level2">
+<h2>Two ways to capture input</h2>
+<p><strong>Common mistake:</strong> using <code>KEYDOWN</code> for movement. The character moves one step, stops, and only then starts moving smoothly (the delay comes from the OS). The solution is <code>get_pressed()</code> for continuous movement.</p>
 </section>
-<section id="sistema-de-coordenadas-en-pygame" class="slide level2">
-<h2>4. Sistema de coordenadas en Pygame</h2>
-<p>El origen <code>(0, 0)</code> está en la esquina <strong>superior izquierda</strong>, y el eje Y crece hacia <strong>abajo</strong>.</p>
+<section id="pygames-coordinate-system" class="slide level2">
+<h2>4. Pygame’s coordinate system</h2>
+<p>The origin <code>(0, 0)</code> is at the <strong>top-left</strong> corner, and the Y axis grows <strong>downward</strong>.</p>
 <pre><code>(0,0) ──────────────────→ X+
   │
   │     (100, 50) ●
@@ -386,9 +387,9 @@
   ↓
  Y+</code></pre>
 </section>
-<section id="sistema-de-coordenadas-en-pygame-1" class="slide level2">
-<h2>4. Sistema de coordenadas en Pygame</h2>
-<p>El origen <code>(0, 0)</code> está en la esquina <strong>superior izquierda</strong>, y el eje Y crece hacia <strong>abajo</strong>.</p>
+<section id="pygames-coordinate-system-1" class="slide level2">
+<h2>4. Pygame’s coordinate system</h2>
+<p>The origin <code>(0, 0)</code> is at the <strong>top-left</strong> corner, and the Y axis grows <strong>downward</strong>.</p>
 <pre><code>(0,0) ──────────────────→ X+
   │
   │     (100, 50) ●
@@ -405,148 +406,148 @@
 <p><strong>Important</strong></p>
 </div>
 <div class="callout-content">
-<p>Para mover un objeto <strong>hacia arriba</strong> en pantalla, hay que <strong>restarle</strong> a Y. Esto es diferente a la matemática convencional donde Y crece hacia arriba.</p>
+<p>To move an object <strong>upward</strong> on screen, you must <strong>subtract</strong> from Y. This differs from conventional math where Y grows upward.</p>
 </div>
 </div>
 </div>
 </section>
-<section id="estructura-del-código" class="slide level2">
-<h2>5. Estructura del código</h2>
-<p>Todo juego en Pygame sigue esta estructura:</p>
+<section id="code-structure" class="slide level2">
+<h2>5. Code structure</h2>
+<p>Every Pygame game follows this structure:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href=""></a><span class="im">import</span> pygame</span>
 <span id="cb5-2"><a href=""></a><span class="im">import</span> sys</span>
 <span id="cb5-3"><a href=""></a></span>
-<span id="cb5-4"><a href=""></a><span class="co"># ── BLOQUE 1: Inicialización ──────────────────────────────</span></span>
+<span id="cb5-4"><a href=""></a><span class="co"># ── BLOCK 1: Initialization ───────────────────────────────</span></span>
 <span id="cb5-5"><a href=""></a>pygame.init()</span>
 <span id="cb5-6"><a href=""></a></span>
-<span id="cb5-7"><a href=""></a>ANCHO, ALTO <span class="op">=</span> <span class="dv">800</span>, <span class="dv">600</span></span>
-<span id="cb5-8"><a href=""></a>FPS <span class="op">=</span> <span class="dv">60</span></span>
-<span id="cb5-9"><a href=""></a>NEGRO  <span class="op">=</span> (<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
-<span id="cb5-10"><a href=""></a>BLANCO <span class="op">=</span> (<span class="dv">255</span>, <span class="dv">255</span>, <span class="dv">255</span>)</span>
-<span id="cb5-11"><a href=""></a>AZUL   <span class="op">=</span> (<span class="dv">50</span>, <span class="dv">120</span>, <span class="dv">220</span>)</span>
+<span id="cb5-7"><a href=""></a>WIDTH, HEIGHT <span class="op">=</span> <span class="dv">800</span>, <span class="dv">600</span></span>
+<span id="cb5-8"><a href=""></a>FPS   <span class="op">=</span> <span class="dv">60</span></span>
+<span id="cb5-9"><a href=""></a>BLACK <span class="op">=</span> (<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
+<span id="cb5-10"><a href=""></a>WHITE <span class="op">=</span> (<span class="dv">255</span>, <span class="dv">255</span>, <span class="dv">255</span>)</span>
+<span id="cb5-11"><a href=""></a>BLUE  <span class="op">=</span> (<span class="dv">50</span>, <span class="dv">120</span>, <span class="dv">220</span>)</span>
 <span id="cb5-12"><a href=""></a></span>
-<span id="cb5-13"><a href=""></a>pantalla <span class="op">=</span> pygame.display.set_mode((ANCHO, ALTO))</span>
-<span id="cb5-14"><a href=""></a>pygame.display.set_caption(<span class="st">"Módulo 1 — Game Loop"</span>)</span>
+<span id="cb5-13"><a href=""></a>screen <span class="op">=</span> pygame.display.set_mode((WIDTH, HEIGHT))</span>
+<span id="cb5-14"><a href=""></a>pygame.display.set_caption(<span class="st">"Module 1 — Game Loop"</span>)</span>
 <span id="cb5-15"><a href=""></a>clock <span class="op">=</span> pygame.time.Clock()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="estructura-del-código-cont." class="slide level2">
-<h2>Estructura del código (cont.)</h2>
-<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href=""></a><span class="co"># ── BLOQUE 2: Estado inicial ──────────────────────────────</span></span>
-<span id="cb6-2"><a href=""></a>x, y <span class="op">=</span> ANCHO <span class="op">//</span> <span class="dv">2</span>, ALTO <span class="op">//</span> <span class="dv">2</span></span>
-<span id="cb6-3"><a href=""></a>velocidad <span class="op">=</span> <span class="dv">4</span></span>
+<section id="code-structure-cont." class="slide level2">
+<h2>Code structure (cont.)</h2>
+<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href=""></a><span class="co"># ── BLOCK 2: Initial state ────────────────────────────────</span></span>
+<span id="cb6-2"><a href=""></a>x, y <span class="op">=</span> WIDTH <span class="op">//</span> <span class="dv">2</span>, HEIGHT <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb6-3"><a href=""></a>speed <span class="op">=</span> <span class="dv">4</span></span>
 <span id="cb6-4"><a href=""></a></span>
-<span id="cb6-5"><a href=""></a><span class="co"># ── BLOQUE 3: Game Loop ───────────────────────────────────</span></span>
+<span id="cb6-5"><a href=""></a><span class="co"># ── BLOCK 3: Game Loop ────────────────────────────────────</span></span>
 <span id="cb6-6"><a href=""></a><span class="cf">while</span> <span class="va">True</span>:</span>
 <span id="cb6-7"><a href=""></a></span>
-<span id="cb6-8"><a href=""></a>    <span class="co"># FASE 1 — INPUT</span></span>
-<span id="cb6-9"><a href=""></a>    <span class="cf">for</span> evento <span class="kw">in</span> pygame.event.get():</span>
-<span id="cb6-10"><a href=""></a>        <span class="cf">if</span> evento.<span class="bu">type</span> <span class="op">==</span> pygame.QUIT:</span>
+<span id="cb6-8"><a href=""></a>    <span class="co"># PHASE 1 — INPUT</span></span>
+<span id="cb6-9"><a href=""></a>    <span class="cf">for</span> event <span class="kw">in</span> pygame.event.get():</span>
+<span id="cb6-10"><a href=""></a>        <span class="cf">if</span> event.<span class="bu">type</span> <span class="op">==</span> pygame.QUIT:</span>
 <span id="cb6-11"><a href=""></a>            pygame.quit()</span>
 <span id="cb6-12"><a href=""></a>            sys.exit()</span>
 <span id="cb6-13"><a href=""></a></span>
-<span id="cb6-14"><a href=""></a>    teclas <span class="op">=</span> pygame.key.get_pressed()</span>
-<span id="cb6-15"><a href=""></a>    <span class="cf">if</span> teclas[pygame.K_LEFT]:  x <span class="op">-=</span> velocidad</span>
-<span id="cb6-16"><a href=""></a>    <span class="cf">if</span> teclas[pygame.K_RIGHT]: x <span class="op">+=</span> velocidad</span>
-<span id="cb6-17"><a href=""></a>    <span class="cf">if</span> teclas[pygame.K_UP]:    y <span class="op">-=</span> velocidad</span>
-<span id="cb6-18"><a href=""></a>    <span class="cf">if</span> teclas[pygame.K_DOWN]:  y <span class="op">+=</span> velocidad</span>
+<span id="cb6-14"><a href=""></a>    keys <span class="op">=</span> pygame.key.get_pressed()</span>
+<span id="cb6-15"><a href=""></a>    <span class="cf">if</span> keys[pygame.K_LEFT]:  x <span class="op">-=</span> speed</span>
+<span id="cb6-16"><a href=""></a>    <span class="cf">if</span> keys[pygame.K_RIGHT]: x <span class="op">+=</span> speed</span>
+<span id="cb6-17"><a href=""></a>    <span class="cf">if</span> keys[pygame.K_UP]:    y <span class="op">-=</span> speed</span>
+<span id="cb6-18"><a href=""></a>    <span class="cf">if</span> keys[pygame.K_DOWN]:  y <span class="op">+=</span> speed</span>
 <span id="cb6-19"><a href=""></a></span>
-<span id="cb6-20"><a href=""></a>    <span class="co"># FASE 2 — UPDATE</span></span>
-<span id="cb6-21"><a href=""></a>    x <span class="op">=</span> <span class="bu">max</span>(<span class="dv">0</span>, <span class="bu">min</span>(x, ANCHO <span class="op">-</span> <span class="dv">40</span>))</span>
-<span id="cb6-22"><a href=""></a>    y <span class="op">=</span> <span class="bu">max</span>(<span class="dv">0</span>, <span class="bu">min</span>(y, ALTO <span class="op">-</span> <span class="dv">40</span>))</span>
+<span id="cb6-20"><a href=""></a>    <span class="co"># PHASE 2 — UPDATE</span></span>
+<span id="cb6-21"><a href=""></a>    x <span class="op">=</span> <span class="bu">max</span>(<span class="dv">0</span>, <span class="bu">min</span>(x, WIDTH <span class="op">-</span> <span class="dv">40</span>))</span>
+<span id="cb6-22"><a href=""></a>    y <span class="op">=</span> <span class="bu">max</span>(<span class="dv">0</span>, <span class="bu">min</span>(y, HEIGHT <span class="op">-</span> <span class="dv">40</span>))</span>
 <span id="cb6-23"><a href=""></a></span>
-<span id="cb6-24"><a href=""></a>    <span class="co"># FASE 3 — RENDER</span></span>
-<span id="cb6-25"><a href=""></a>    pantalla.fill(NEGRO)</span>
-<span id="cb6-26"><a href=""></a>    pygame.draw.rect(pantalla, AZUL, (x, y, <span class="dv">40</span>, <span class="dv">40</span>))</span>
+<span id="cb6-24"><a href=""></a>    <span class="co"># PHASE 3 — RENDER</span></span>
+<span id="cb6-25"><a href=""></a>    screen.fill(BLACK)</span>
+<span id="cb6-26"><a href=""></a>    pygame.draw.rect(screen, BLUE, (x, y, <span class="dv">40</span>, <span class="dv">40</span>))</span>
 <span id="cb6-27"><a href=""></a>    pygame.display.flip()</span>
 <span id="cb6-28"><a href=""></a></span>
 <span id="cb6-29"><a href=""></a>    clock.tick(FPS)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="eventos-disponibles-en-pygame" class="slide level2">
-<h2>6. Eventos disponibles en Pygame</h2>
+<section id="available-events-in-pygame" class="slide level2">
+<h2>6. Available events in Pygame</h2>
 <table class="caption-top">
 <thead>
 <tr class="header">
-<th>Evento</th>
-<th>Descripción</th>
+<th>Event</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td><code>pygame.QUIT</code></td>
-<td>Click en la X de la ventana</td>
+<td>Click on the window’s X button</td>
 </tr>
 <tr class="even">
 <td><code>pygame.KEYDOWN</code></td>
-<td>Tecla recién presionada</td>
+<td>Key just pressed</td>
 </tr>
 <tr class="odd">
 <td><code>pygame.KEYUP</code></td>
-<td>Tecla soltada</td>
+<td>Key released</td>
 </tr>
 <tr class="even">
 <td><code>pygame.MOUSEBUTTONDOWN</code></td>
-<td>Botón del mouse presionado</td>
+<td>Mouse button pressed</td>
 </tr>
 <tr class="odd">
 <td><code>pygame.MOUSEBUTTONUP</code></td>
-<td>Botón del mouse soltado</td>
+<td>Mouse button released</td>
 </tr>
 <tr class="even">
 <td><code>pygame.MOUSEMOTION</code></td>
-<td>Mouse movido (incluye posición y delta)</td>
+<td>Mouse moved (includes position and delta)</td>
 </tr>
 <tr class="odd">
 <td><code>pygame.MOUSEWHEEL</code></td>
-<td>Scroll del mouse</td>
+<td>Mouse scroll</td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="teclas-más-usadas-en-juegos" class="slide level2">
-<h2>Teclas más usadas en juegos</h2>
+<section id="most-commonly-used-keys-in-games" class="slide level2">
+<h2>Most commonly used keys in games</h2>
 <table class="caption-top">
 <thead>
 <tr class="header">
-<th>Categoría</th>
-<th>Teclas</th>
+<th>Category</th>
+<th>Keys</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Movimiento</td>
+<td>Movement</td>
 <td><code>K_LEFT</code>, <code>K_RIGHT</code>, <code>K_UP</code>, <code>K_DOWN</code></td>
 </tr>
 <tr class="even">
-<td>Acciones</td>
+<td>Actions</td>
 <td><code>K_SPACE</code>, <code>K_RETURN</code>, <code>K_ESCAPE</code></td>
 </tr>
 <tr class="odd">
-<td>Letras</td>
+<td>Letters</td>
 <td><code>K_a</code> … <code>K_z</code></td>
 </tr>
 <tr class="even">
-<td>Números</td>
+<td>Numbers</td>
 <td><code>K_0</code> … <code>K_9</code></td>
 </tr>
 <tr class="odd">
-<td>Modificadores</td>
+<td>Modifiers</td>
 <td><code>K_LSHIFT</code>, <code>K_RSHIFT</code>, <code>K_LCTRL</code>, <code>K_RCTRL</code></td>
 </tr>
 </tbody>
 </table>
-<p>Todas son constantes del módulo <code>pygame</code>.</p>
+<p>All are constants from the <code>pygame</code> module.</p>
 </section>
 <section id="input-event-vs-get_pressed" class="slide level2">
 <h2>7. Input: event vs get_pressed</h2>
-<p><strong><code>KEYDOWN</code> (event):</strong> dispara una sola vez al presionar</p>
-<pre><code>Frame 0: KEYDOWN detectado → el personaje se mueve 1 vez
-Frame 1: sin evento (la tecla sigue presionada pero nada pasa)
-Frame 2: sin evento
+<p><strong><code>KEYDOWN</code> (event):</strong> fires only once when pressed</p>
+<pre><code>Frame 0: KEYDOWN detected → character moves 1 time
+Frame 1: no event (key still held but nothing happens)
+Frame 2: no event
 ...</code></pre>
-<p><strong><code>get_pressed()</code>:</strong> dispara CADA frame mientras la tecla esté sostenida</p>
-<pre><code>Frame 0: get_pressed → el personaje se mueve (movimiento fluido)
-Frame 1: get_pressed → el personaje se mueve (movimiento fluido)
-Frame 2: get_pressed → el personaje se mueve (movimiento fluido)
+<p><strong><code>get_pressed()</code>:</strong> fires EVERY frame while the key is held</p>
+<pre><code>Frame 0: get_pressed → character moves (smooth movement)
+Frame 1: get_pressed → character moves (smooth movement)
+Frame 2: get_pressed → character moves (smooth movement)
 ...</code></pre>
 <div class="callout callout-tip callout-titled callout-style-default">
 <div class="callout-body">
@@ -557,80 +558,80 @@ Frame 2: get_pressed → el personaje se mueve (movimiento fluido)
 <p><strong>Tip</strong></p>
 </div>
 <div class="callout-content">
-<p>Usa <code>KEYDOWN</code> para acciones únicas (saltar, disparar) y <code>get_pressed()</code> para movimiento continuo.</p>
+<p>Use <code>KEYDOWN</code> for single actions (jump, shoot) and <code>get_pressed()</code> for continuous movement.</p>
 </div>
 </div>
 </div>
 </section>
-<section id="el-clock-y-los-fps" class="slide level2">
-<h2>8. El Clock y los FPS</h2>
-<p>El <code>Clock</code> de Pygame limita cuán rápido corre el game loop.</p>
+<section id="the-clock-and-fps" class="slide level2">
+<h2>8. The Clock and FPS</h2>
+<p>Pygame’s <code>Clock</code> limits how fast the game loop runs.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href=""></a><span class="im">import</span> time</span>
 <span id="cb9-2"><a href=""></a></span>
-<span id="cb9-3"><a href=""></a><span class="kw">def</span> simular_clock_tick(fps_objetivo, frames<span class="op">=</span><span class="dv">5</span>):</span>
+<span id="cb9-3"><a href=""></a><span class="kw">def</span> simulate_clock_tick(target_fps, frames<span class="op">=</span><span class="dv">5</span>):</span>
 <span id="cb9-4"><a href=""></a>    <span class="co">"""</span></span>
-<span id="cb9-5"><a href=""></a><span class="co">    Simula cómo clock.tick(fps) controla la velocidad del loop.</span></span>
-<span id="cb9-6"><a href=""></a><span class="co">    En Pygame, clock.tick(60) bloquea hasta que haya pasado 1/60 segundos.</span></span>
+<span id="cb9-5"><a href=""></a><span class="co">    Simulates how clock.tick(fps) controls the loop speed.</span></span>
+<span id="cb9-6"><a href=""></a><span class="co">    In Pygame, clock.tick(60) blocks until 1/60 seconds have passed.</span></span>
 <span id="cb9-7"><a href=""></a><span class="co">    """</span></span>
-<span id="cb9-8"><a href=""></a>    duracion_frame <span class="op">=</span> <span class="fl">1.0</span> <span class="op">/</span> fps_objetivo  <span class="co"># segundos por frame</span></span>
+<span id="cb9-8"><a href=""></a>    frame_duration <span class="op">=</span> <span class="fl">1.0</span> <span class="op">/</span> target_fps  <span class="co"># seconds per frame</span></span>
 <span id="cb9-9"><a href=""></a></span>
 <span id="cb9-10"><a href=""></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(frames):</span>
-<span id="cb9-11"><a href=""></a>        inicio <span class="op">=</span> time.time()</span>
+<span id="cb9-11"><a href=""></a>        start <span class="op">=</span> time.time()</span>
 <span id="cb9-12"><a href=""></a></span>
-<span id="cb9-13"><a href=""></a>        time.sleep(<span class="fl">0.002</span>)  <span class="co"># Simula 2ms de trabajo del juego</span></span>
+<span id="cb9-13"><a href=""></a>        time.sleep(<span class="fl">0.002</span>)  <span class="co"># Simulates 2ms of game work</span></span>
 <span id="cb9-14"><a href=""></a></span>
-<span id="cb9-15"><a href=""></a>        tiempo_trabajado <span class="op">=</span> time.time() <span class="op">-</span> inicio</span>
-<span id="cb9-16"><a href=""></a>        espera <span class="op">=</span> duracion_frame <span class="op">-</span> tiempo_trabajado</span>
-<span id="cb9-17"><a href=""></a>        <span class="cf">if</span> espera <span class="op">&gt;</span> <span class="dv">0</span>:</span>
-<span id="cb9-18"><a href=""></a>            time.sleep(espera)</span>
+<span id="cb9-15"><a href=""></a>        work_time <span class="op">=</span> time.time() <span class="op">-</span> start</span>
+<span id="cb9-16"><a href=""></a>        wait <span class="op">=</span> frame_duration <span class="op">-</span> work_time</span>
+<span id="cb9-17"><a href=""></a>        <span class="cf">if</span> wait <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb9-18"><a href=""></a>            time.sleep(wait)</span>
 <span id="cb9-19"><a href=""></a></span>
-<span id="cb9-20"><a href=""></a>        tiempo_total <span class="op">=</span> time.time() <span class="op">-</span> inicio</span>
-<span id="cb9-21"><a href=""></a>        fps_real <span class="op">=</span> <span class="fl">1.0</span> <span class="op">/</span> tiempo_total</span>
-<span id="cb9-22"><a href=""></a>        <span class="bu">print</span>(<span class="ss">f"Frame </span><span class="sc">{</span>i<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss">: trabajo=</span><span class="sc">{</span>tiempo_trabajado<span class="op">*</span><span class="dv">1000</span><span class="sc">:.1f}</span><span class="ss">ms, "</span></span>
-<span id="cb9-23"><a href=""></a>              <span class="ss">f"espera=</span><span class="sc">{</span>espera<span class="op">*</span><span class="dv">1000</span><span class="sc">:.1f}</span><span class="ss">ms, FPS real≈</span><span class="sc">{</span>fps_real<span class="sc">:.0f}</span><span class="ss">"</span>)</span>
+<span id="cb9-20"><a href=""></a>        total_time <span class="op">=</span> time.time() <span class="op">-</span> start</span>
+<span id="cb9-21"><a href=""></a>        real_fps <span class="op">=</span> <span class="fl">1.0</span> <span class="op">/</span> total_time</span>
+<span id="cb9-22"><a href=""></a>        <span class="bu">print</span>(<span class="ss">f"Frame </span><span class="sc">{</span>i<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss">: work=</span><span class="sc">{</span>work_time<span class="op">*</span><span class="dv">1000</span><span class="sc">:.1f}</span><span class="ss">ms, "</span></span>
+<span id="cb9-23"><a href=""></a>              <span class="ss">f"wait=</span><span class="sc">{</span>wait<span class="op">*</span><span class="dv">1000</span><span class="sc">:.1f}</span><span class="ss">ms, real FPS≈</span><span class="sc">{</span>real_fps<span class="sc">:.0f}</span><span class="ss">"</span>)</span>
 <span id="cb9-24"><a href=""></a></span>
-<span id="cb9-25"><a href=""></a>simular_clock_tick(fps_objetivo<span class="op">=</span><span class="dv">30</span>, frames<span class="op">=</span><span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-25"><a href=""></a>simulate_clock_tick(target_fps<span class="op">=</span><span class="dv">30</span>, frames<span class="op">=</span><span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="sistema-de-coordenadas-ejercicio" class="slide level2">
-<h2>9. Sistema de coordenadas — ejercicio</h2>
-<p>Calcula las coordenadas para ubicar objetos en distintas posiciones de la pantalla.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href=""></a>ANCHO <span class="op">=</span> <span class="dv">800</span></span>
-<span id="cb10-2"><a href=""></a>ALTO  <span class="op">=</span> <span class="dv">600</span></span>
-<span id="cb10-3"><a href=""></a>TAM   <span class="op">=</span> <span class="dv">40</span>   <span class="co"># Tamaño del objeto</span></span>
+<section id="coordinate-system-exercise" class="slide level2">
+<h2>9. Coordinate system — exercise</h2>
+<p>Calculate the coordinates to place objects at different positions on screen.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href=""></a>WIDTH  <span class="op">=</span> <span class="dv">800</span></span>
+<span id="cb10-2"><a href=""></a>HEIGHT <span class="op">=</span> <span class="dv">600</span></span>
+<span id="cb10-3"><a href=""></a>SIZE   <span class="op">=</span> <span class="dv">40</span>   <span class="co"># Object size</span></span>
 <span id="cb10-4"><a href=""></a></span>
-<span id="cb10-5"><a href=""></a>posiciones <span class="op">=</span> {</span>
-<span id="cb10-6"><a href=""></a>    <span class="st">'Esquina superior izquierda'</span>: (<span class="dv">0</span>, <span class="dv">0</span>),</span>
-<span id="cb10-7"><a href=""></a>    <span class="st">'Esquina superior derecha'</span>:   (ANCHO <span class="op">-</span> TAM, <span class="dv">0</span>),</span>
-<span id="cb10-8"><a href=""></a>    <span class="st">'Esquina inferior izquierda'</span>: (<span class="dv">0</span>, ALTO <span class="op">-</span> TAM),</span>
-<span id="cb10-9"><a href=""></a>    <span class="st">'Esquina inferior derecha'</span>:   (ANCHO <span class="op">-</span> TAM, ALTO <span class="op">-</span> TAM),</span>
-<span id="cb10-10"><a href=""></a>    <span class="st">'Centro exacto'</span>:              (ANCHO <span class="op">//</span> <span class="dv">2</span> <span class="op">-</span> TAM <span class="op">//</span> <span class="dv">2</span>, ALTO <span class="op">//</span> <span class="dv">2</span> <span class="op">-</span> TAM <span class="op">//</span> <span class="dv">2</span>),</span>
-<span id="cb10-11"><a href=""></a>    <span class="st">'Centro horizontal, arriba'</span>:  (ANCHO <span class="op">//</span> <span class="dv">2</span> <span class="op">-</span> TAM <span class="op">//</span> <span class="dv">2</span>, <span class="dv">20</span>),</span>
+<span id="cb10-5"><a href=""></a>positions <span class="op">=</span> {</span>
+<span id="cb10-6"><a href=""></a>    <span class="st">'Top-left corner'</span>:      (<span class="dv">0</span>, <span class="dv">0</span>),</span>
+<span id="cb10-7"><a href=""></a>    <span class="st">'Top-right corner'</span>:     (WIDTH <span class="op">-</span> SIZE, <span class="dv">0</span>),</span>
+<span id="cb10-8"><a href=""></a>    <span class="st">'Bottom-left corner'</span>:   (<span class="dv">0</span>, HEIGHT <span class="op">-</span> SIZE),</span>
+<span id="cb10-9"><a href=""></a>    <span class="st">'Bottom-right corner'</span>:  (WIDTH <span class="op">-</span> SIZE, HEIGHT <span class="op">-</span> SIZE),</span>
+<span id="cb10-10"><a href=""></a>    <span class="st">'Exact center'</span>:         (WIDTH <span class="op">//</span> <span class="dv">2</span> <span class="op">-</span> SIZE <span class="op">//</span> <span class="dv">2</span>, HEIGHT <span class="op">//</span> <span class="dv">2</span> <span class="op">-</span> SIZE <span class="op">//</span> <span class="dv">2</span>),</span>
+<span id="cb10-11"><a href=""></a>    <span class="st">'Horizontal center, top'</span>: (WIDTH <span class="op">//</span> <span class="dv">2</span> <span class="op">-</span> SIZE <span class="op">//</span> <span class="dv">2</span>, <span class="dv">20</span>),</span>
 <span id="cb10-12"><a href=""></a>}</span>
 <span id="cb10-13"><a href=""></a></span>
-<span id="cb10-14"><a href=""></a><span class="cf">for</span> nombre, coords <span class="kw">in</span> posiciones.items():</span>
-<span id="cb10-15"><a href=""></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>nombre<span class="sc">:&lt;35}</span><span class="ss"> → </span><span class="sc">{</span>coords<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-14"><a href=""></a><span class="cf">for</span> name, coords <span class="kw">in</span> positions.items():</span>
+<span id="cb10-15"><a href=""></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>name<span class="sc">:&lt;35}</span><span class="ss"> → </span><span class="sc">{</span>coords<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="resumen-del-módulo" class="slide level2">
-<h2>Resumen del módulo</h2>
+<section id="summary" class="slide level2">
+<h2>Summary</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
-<p><strong>Conceptos clave:</strong></p>
+<p><strong>Key concepts:</strong></p>
 <ul>
-<li>El <strong>Game Loop</strong> es el corazón de todo juego</li>
-<li>Tres fases: <strong>INPUT → UPDATE → RENDER</strong></li>
-<li><strong>FPS</strong> controla la velocidad del loop</li>
-<li><strong>Double Buffering</strong> evita el tearing</li>
+<li>The <strong>Game Loop</strong> is the heart of every game</li>
+<li>Three phases: <strong>INPUT → UPDATE → RENDER</strong></li>
+<li><strong>FPS</strong> controls the loop speed</li>
+<li><strong>Double Buffering</strong> prevents tearing</li>
 </ul>
 </div><div class="column" style="width:50%;">
 <p><strong>Input:</strong></p>
 <ul>
-<li><code>event.get()</code> → acciones únicas</li>
-<li><code>get_pressed()</code> → movimiento continuo</li>
+<li><code>event.get()</code> → single actions</li>
+<li><code>get_pressed()</code> → continuous movement</li>
 </ul>
-<p><strong>Coordenadas:</strong></p>
+<p><strong>Coordinates:</strong></p>
 <ul>
-<li>Origen en esquina <strong>superior izquierda</strong></li>
-<li>Eje Y crece hacia <strong>abajo</strong></li>
+<li>Origin at the <strong>top-left</strong> corner</li>
+<li>Y axis grows <strong>downward</strong></li>
 </ul>
 </div></div>
 

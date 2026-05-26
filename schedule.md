@@ -40,3 +40,27 @@ For labs, please bring your notebooks!
 
 --- 
 
+
+### Week 4
+
+{: .lecture}
+>Lecture 4: [Introduction to Collisions](./Lectures/Lec4/)
+
+{: .lab}
+>Lab 3: [Introduction to Collisions](./Labs/Lab3/)
+>
+
+--- 
+
+
+### Week 5
+
+{: .lecture}
+>Lecture 5: [Introduction to Animations](./Lectures/Lec5/)
+
+{: .lab}
+>Lab 4: [Introduction to Animations](./Labs/Lab4/)
+>
+
+--- 
+

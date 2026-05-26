@@ -1,6 +1,8 @@
 ---
 title: "Git for Dummies"
 subtitle: "Version control from scratch — Linux edition"
+author: "Felipe A. Moreno-Vera"
+lang: en
 format:
   revealjs:
     slide-number: true
@@ -11,6 +13,8 @@ format:
     code-block-height: 380px
     highlight-style: github-dark
     fontsize: 30px
+  html:
+    allow-html: true
 ---
 
 ## What you'll learn
