@@ -1,0 +1,275 @@
+---
+title: "Scenes, Audio, and Tilemaps"
+subtitle: "Pygame Game Development Course"
+author: "Felipe A. Moreno-Vera"
+lang: en
+format:
+  revealjs:
+    slide-number: true
+    chalkboard:
+      buttons: false
+    preview-links: auto
+    theme: dark
+    code-block-height: 380px
+    highlight-style: github-dark
+    fontsize: 30px
+  html:
+    allow-html: true
+jupyter: python3
+---
+
+
+# 🗺️ Tilemaps & Scrolling
+
+## What is a Tilemap?
+
+A **tilemap** is a 2D grid where each cell holds a small integer (tile ID) that maps to a tile image. This is how almost every 2D game stores its levels — from Super Mario Bros to modern indie games.
+
+## What is a Tilemap?
+
+A **tilemap** is a 2D grid where each cell holds a small integer (tile ID) that maps to a tile image. This is how almost every 2D game stores its levels — from Super Mario Bros to modern indie games.
+
+```
+Level data (2D list of ints):     Rendered result:
+0 = air   1 = grass   2 = stone
+
+ 0  0  0  0  0  0  0  0            ░░░░░░░░
+ 0  0  0  1  1  0  0  0            ░░░🌿🌿░░░
+ 0  0  0  0  0  0  0  0            ░░░░░░░░
+ 1  1  1  2  2  1  1  1            🌿🌿🌿🪨🪨🌿🌿🌿
+ 2  2  2  2  2  2  2  2            🪨🪨🪨🪨🪨🪨🪨🪨
+```
+
+## What is a Tilemap?
+
+A **tilemap** is a 2D grid where each cell holds a small integer (tile ID) that maps to a tile image. This is how almost every 2D game stores its levels — from Super Mario Bros to modern indie games.
+
+```
+Level data (2D list of ints):     Rendered result:
+0 = air   1 = grass   2 = stone
+
+ 0  0  0  0  0  0  0  0            ░░░░░░░░
+ 0  0  0  1  1  0  0  0            ░░░🌿🌿░░░
+ 0  0  0  0  0  0  0  0            ░░░░░░░░
+ 1  1  1  2  2  1  1  1            🌿🌿🌿🪨🪨🌿🌿🌿
+ 2  2  2  2  2  2  2  2            🪨🪨🪨🪨🪨🪨🪨🪨
+```
+
+Benefits of tilemaps:
+- Levels are **compact** — a 100×50 map is just 5,000 integers
+- Easy to **serialize** (save/load levels as text files)
+- **Efficient rendering** — draw only visible tiles (culling)
+- **Reusable assets** — 10 tile images can build infinite levels
+
+## TileMap Class
+
+```python
+class TileMap:
+    def __init__(self, level_data, tile_size):
+        self.data      = level_data
+        self.tile_size = tile_size
+        self.rows      = len(data)
+        self.cols      = len(data[0])
+
+    def get_tile(self, col, row):
+        if 0 <= row < self.rows and 0 <= col < self.cols:
+            return self.data[row][col]
+        return -1   # Out of bounds
+
+    def set_tile(self, col, row, tile_id):
+        if 0 <= row < self.rows and 0 <= col < self.cols:
+            self.data[row][col] = tile_id
+
+    def world_to_tile(self, world_x, world_y):
+        return int(world_x // self.tile_size), int(world_y // self.tile_size)
+
+    def draw(self, surface, camera_x, camera_y):
+        ts = self.tile_size
+
+        # CULLING: only draw tiles visible in the viewport
+        col_start = max(0, int(camera_x // ts))
+        col_end   = min(self.cols, int((camera_x + SCREEN_W) // ts) + 1)
+        row_start = max(0, int(camera_y // ts))
+        row_end   = min(self.rows, int((camera_y + SCREEN_H) // ts) + 1)
+
+        for row in range(row_start, row_end):
+            for col in range(col_start, col_end):
+                tile_id  = self.data[row][col]
+                if tile_id == 0: continue
+                screen_x = col * ts - camera_x
+                screen_y = row * ts - camera_y
+                surface.blit(tile_images[tile_id], (screen_x, screen_y))
+```
+
+```{python}
+# Demonstrate culling savings
+
+def culling_stats(map_cols, map_rows, screen_w, screen_h, tile_size):
+    """How many tiles do we skip by culling?"""
+    total      = map_cols * map_rows
+    visible_c  = screen_w  // tile_size + 2
+    visible_r  = screen_h // tile_size + 2
+    visible    = min(visible_c, map_cols) * min(visible_r, map_rows)
+    skipped    = total - visible
+    savings    = skipped / total * 100
+    return total, visible, skipped, savings
+
+print("Culling savings — tiles skipped vs drawn each frame")
+print("=" * 60)
+print(f"  {'Map size':<16} {'Total':<8} {'Visible':<10} {'Skipped':<10} {'Saved'}")
+print("  " + "-" * 56)
+
+configs = [
+    (20,  15, 900, 600, 40, "Small (20×15)"),
+    (50,  30, 900, 600, 40, "Medium (50×30)"),
+    (100, 50, 900, 600, 40, "Large (100×50)"),
+    (200, 80, 900, 600, 40, "Huge (200×80)"),
+]
+for cols, rows, sw, sh, ts, label in configs:
+    total, vis, skip, savings = culling_stats(cols, rows, sw, sh, ts)
+    print(f"  {label:<16} {total:<8} {vis:<10} {skip:<10} {savings:.0f}%")
+```
+
+## The Camera
+
+The camera represents the **viewport into the world**. Everything is drawn in **world space** and converted to **screen space** for rendering.
+
+```python
+class Camera:
+    def __init__(self, view_w, view_h):
+        self.x    = 0.0   # Camera top-left in world space
+        self.y    = 0.0
+        self.zoom = 1.0
+
+    def world_to_screen(self, wx, wy):
+        """What screen pixel does this world coordinate map to?"""
+        sx = (wx - self.x) * self.zoom
+        sy = (wy - self.y) * self.zoom
+        return int(sx), int(sy)
+
+    def screen_to_world(self, sx, sy):
+        """What world coordinate is under this screen pixel?"""
+        wx = sx / self.zoom + self.x
+        wy = sy / self.zoom + self.y
+        return wx, wy
+
+    def follow(self, target_x, target_y, dt, world_w, world_h):
+        """Smooth follow with lerp."""
+        desired_x = target_x - self.view_w / (2 * self.zoom)
+        desired_y = target_y - self.view_h / (2 * self.zoom)
+        self.x += (desired_x - self.x) * 6.0 * dt  # Lerp
+        # Clamp to world bounds
+        self.x = max(0, min(self.x, world_w - self.view_w / self.zoom))
+        self.y = max(0, min(self.y, world_h - self.view_h / self.zoom))
+```
+
+## Camera Dead Zone
+
+A **dead zone** is a region around the screen center where the camera doesn't move. The player can walk freely within the dead zone; the camera only moves when the player hits its edge.
+
+```
+Screen:
+┌──────────────────────────────────┐
+│                                  │
+│      ┌──────────────┐            │
+│      │  DEAD ZONE   │            │
+│      │   Player ●   │ ← camera   │
+│      │  moves here  │   doesn't  │
+│      │  freely      │   move     │
+│      └──────────────┘            │
+│                                  │
+└──────────────────────────────────┘
+```
+
+## Camera Shake
+
+```python
+def shake(self, strength=8.0, duration=0.4):
+    self._shake_strength = strength
+    self._shake_timer    = duration
+
+def update_shake(self, dt):
+    if self._shake_timer > 0:
+        self._shake_timer -= dt
+        pct = self._shake_timer / 0.4
+        self._shake_offset = (
+            random.uniform(-1, 1) * self._shake_strength * pct,
+            random.uniform(-1, 1) * self._shake_strength * pct,
+        )
+    else:
+        self._shake_offset = (0, 0)
+
+# Apply offset in world_to_screen():
+sx = (wx - self.x) * self.zoom + self._shake_offset[0]
+```
+
+## Parallax Scrolling
+
+Parallax makes the world feel **deep** by scrolling different background layers at different speeds.
+
+```
+Layer           Speed (% of camera)   Perceived depth
+─────           ───────────────────   ───────────────
+Stars              5%                   Very far away
+Distant mountains  15%                  Far
+Near mountains     25%                  Medium
+Clouds            30–50%                Near background
+```
+
+```python
+class ParallaxLayer:
+    """
+    factor = 0.0 → stationary (sky)
+    factor = 1.0 → moves with the world (foreground)
+    """
+    def __init__(self, factor):
+        self.factor = factor
+
+    def draw(self, surface, camera_x):
+        offset_x = int(camera_x * self.factor)
+        for element in self.elements:
+            screen_x = element.x - offset_x
+            # Seamless horizontal wrap
+            screen_x = screen_x % (WORLD_W + SCREEN_W) - SCREEN_W
+            # Draw at screen_x...
+```
+
+## Parallax Scrolling
+
+```{python}
+# Simulate parallax offset for different layers at the same camera position
+
+camera_x = 500  # Camera scrolled 500px to the right
+
+layers = [
+    ("Stars (far)",         0.05),
+    ("Distant mountains",   0.15),
+    ("Near mountains",      0.25),
+    ("Far clouds",          0.30),
+    ("Near clouds",         0.50),
+    ("Background trees",    0.70),
+    ("World objects",       1.00),
+]
+
+print(f"Camera scrolled {camera_x}px to the right")
+print()
+print(f"  {'Layer':<22} {'Factor':<8} {'Scrolled':<12} {'Illusion'}")
+print("  " + "-" * 56)
+for name, factor in layers:
+    scrolled = camera_x * factor
+    illusion = "Stationary" if factor < 0.1 else \
+               "Very far"   if factor < 0.2 else \
+               "Far"        if factor < 0.4 else \
+               "Medium"     if factor < 0.7 else "Same as world"
+    print(f"  {name:<22} {factor:<8.2f} {scrolled:<12.0f} {illusion}")
+```
+
+## Tilemaps & Camera — Summary {.unnumbered}
+
+- Tilemap = 2D list of ints → compact, serializable, efficient
+- **Culling**: only draw tiles within the viewport — critical for large maps
+- Camera converts **world ↔ screen** coordinates for every object
+- **Smooth follow**: lerp toward desired camera position each frame
+- **Dead zone**: player moves freely in a central region before camera tracks
+- **Parallax**: background layers scrolled at `camera_x * factor`; lower = farther
+

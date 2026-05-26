@@ -5,15 +5,15 @@ nav_order: 5
 layout: default
 ---
 
-# Lecture 5: Introduction to Animatios
+# Lecture 5: Introduction to Animations
 {: .no_toc }
 
 {: .summary}
 >In this lecture, we will learn:
 >
->* Collides
->* Collisions
->* Overlappings
+>* Animations
+>* Transitions
+>* FPS and clock
 
 
 ### Slides

@@ -1,0 +1,195 @@
+---
+title: "Scenes, Audio, and Tilemaps"
+subtitle: "Pygame Game Development Course"
+author: "Felipe A. Moreno-Vera"
+lang: en
+format:
+  revealjs:
+    slide-number: true
+    chalkboard:
+      buttons: false
+    preview-links: auto
+    theme: dark
+    code-block-height: 380px
+    highlight-style: github-dark
+    fontsize: 30px
+  html:
+    allow-html: true
+jupyter: python3
+---
+
+
+# 🔊 Audio
+
+## pygame.mixer Architecture
+
+Pygame's audio system has two main components:
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  pygame.mixer                       │
+│                                                     │
+│  pygame.mixer.music      pygame.mixer.Sound         │
+│  ─────────────────       ─────────────────          │
+│  • Streaming playback    • Loaded fully in RAM      │
+│  • One track at a time   • Multiple instances       │
+│  • MP3 / OGG / WAV       • Short clips only         │
+│  • For background music  • For sound effects        │
+│                                                     │
+│  Channels: 0 ──── 1 ──── 2 ──── ... ──── N-1       │
+│  Each Sound plays on one channel at a time          │
+└─────────────────────────────────────────────────────┘
+```
+
+## pygame.mixer Architecture
+
+Pygame's audio system has two main components:
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  pygame.mixer                       │
+│                                                     │
+│  pygame.mixer.music      pygame.mixer.Sound         │
+│  ─────────────────       ─────────────────          │
+│  • Streaming playback    • Loaded fully in RAM      │
+│  • One track at a time   • Multiple instances       │
+│  • MP3 / OGG / WAV       • Short clips only         │
+│  • For background music  • For sound effects        │
+│                                                     │
+│  Channels: 0 ──── 1 ──── 2 ──── ... ──── N-1       │
+│  Each Sound plays on one channel at a time          │
+└─────────────────────────────────────────────────────┘
+```
+
+### Initialization
+
+```python
+# MUST be called before pygame.init()
+pygame.mixer.pre_init(
+    frequency = 44100,   # Sample rate (Hz). 44100 = CD quality
+    size      = -16,     # Bit depth. -16 = 16-bit signed
+    channels  = 2,       # 1 = mono, 2 = stereo
+    buffer    = 512      # Smaller = less latency, more CPU
+)
+pygame.init()
+```
+
+## Background Music
+
+```python
+# Load and stream (file stays on disk, not loaded into RAM)
+pygame.mixer.music.load("music/background.ogg")
+pygame.mixer.music.set_volume(0.7)    # 0.0 to 1.0
+pygame.mixer.music.play(loops=-1)     # -1 = infinite loop
+pygame.mixer.music.play(loops=3)      # Play 3 times
+
+# Control
+pygame.mixer.music.pause()
+pygame.mixer.music.unpause()
+pygame.mixer.music.stop()
+pygame.mixer.music.fadeout(2000)      # Fade out over 2000ms
+
+# Query state
+pos_ms = pygame.mixer.music.get_pos()   # Current position in ms
+is_playing = pygame.mixer.music.get_busy()
+```
+
+## Sound Effects
+
+```python
+# Load fully into memory (use for short clips)
+jump_sfx = pygame.mixer.Sound("sfx/jump.wav")
+jump_sfx.set_volume(0.8)
+
+# Play — returns the Channel it plays on
+channel = jump_sfx.play()             # Any free channel
+channel = jump_sfx.play(loops=2)      # Play 3 times total
+channel = jump_sfx.play(maxtime=500)  # Stop after 500ms
+
+# If no free channel is available, returns None
+if channel is None:
+    print("No free channel!")
+```
+
+## Channels
+
+Pygame has N mixer channels (default 8). Each Sound plays on one channel at a time.
+
+```python
+pygame.mixer.set_num_channels(16)
+
+# Reserve a specific channel for a category
+music_ch = pygame.mixer.Channel(7)
+music_ch.play(bg_sound, loops=-1)
+music_ch.set_volume(0.5)
+
+# Stereo panning: set_volume(left, right)
+music_ch.set_volume(0.8, 0.2)   # Panned left
+
+# Query
+music_ch.get_busy()             # Is something playing?
+music_ch.stop()
+music_ch.pause()
+music_ch.fadeout(1000)
+```
+
+## Channels
+
+```{python}
+# Demonstrate how stereo panning works mathematically
+
+def stereo_pan(position_x, screen_width, volume=1.0):
+    """
+    Convert a world x position to stereo L/R volumes.
+    position_x = 0    → full left
+    position_x = W/2  → center (equal)
+    position_x = W    → full right
+    """
+    pan   = (position_x / screen_width) * 2 - 1   # -1 to +1
+    left  = volume * (1.0 - max(0.0, pan))
+    right = volume * (1.0 + min(0.0, pan))
+    return round(min(1.0, left), 2), round(min(1.0, right), 2)
+
+print("Spatial audio — stereo pan by position")
+print("=" * 45)
+print(f"  {'x position':<14} {'pan':<8} {'left vol':<12} {'right vol'}")
+print("  " + "-" * 44)
+
+width = 900
+for x in [0, 150, 300, 450, 600, 750, 900]:
+    pan  = (x / width) * 2 - 1
+    l, r = stereo_pan(x, width)
+    print(f"  x={x:<10}    {pan:+.2f}    {l:<12}  {r}")
+```
+
+## Volume Hierarchy
+
+```python
+# Three independent volume levels that multiply together
+# Final volume = master * category * sound
+
+# 1. Per-sound volume
+sfx.set_volume(0.8)
+
+# 2. Per-channel volume
+channel.set_volume(0.7)
+
+# 3. No true "master" in pygame — simulate with a multiplier
+master_volume = 0.5
+
+def play_sfx(sound, master=1.0):
+    ch = sound.play()
+    if ch:
+        current = sound.get_volume()
+        ch.set_volume(current * master)
+```
+
+## Audios — Summary
+
+- `pygame.mixer.pre_init()` must be called **before** `pygame.init()`
+- `music` streams from disk — use for long background tracks
+- `Sound` loads fully into RAM — use for short SFX only
+- Each `Sound` plays on a `Channel`; reserve channels for categories
+- Stereo panning: `channel.set_volume(left, right)`
+- Distance attenuation: `volume = max(0, 1 - distance / max_dist)`
+

@@ -64,3 +64,39 @@ For labs, please bring your notebooks!
 
 --- 
 
+
+### Week 6
+
+{: .lecture}
+>Lecture 6: [Introduction to Scenes](./Lectures/Lec6/)
+
+{: .lab}
+>Lab 5: [Introduction to Scenes](./Labs/Lab5/)
+>
+
+--- 
+
+
+### Week 7
+
+{: .lecture}
+>Lecture 7: [Introduction to Audio](./Lectures/Lec7/)
+
+{: .lab}
+>Lab 6: [Introduction to Audio](./Labs/Lab6/)
+>
+
+--- 
+
+
+### Week 8
+
+{: .lecture}
+>Lecture 8: [Introduction to Tilemap](./Lectures/Lec8/)
+
+{: .lab}
+>Lab 7: [Introduction to Tilemap](./Labs/Lab7/)
+>
+
+--- 
+

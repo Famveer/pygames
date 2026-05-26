@@ -11,9 +11,9 @@ layout: default
 {: .summary}
 >In this lecture, we will learn:
 >
->* Animations
->* Transitions
->* FPS and clock
+>* Collides
+>* Collisions
+>* Overlappings
 
 
 ### Slides

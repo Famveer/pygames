@@ -1,0 +1,237 @@
+---
+title: "Scenes, Audio, and Tilemaps"
+subtitle: "Pygame Game Development Course"
+author: "Felipe A. Moreno-Vera"
+lang: en
+format:
+  revealjs:
+    slide-number: true
+    chalkboard:
+      buttons: false
+    preview-links: auto
+    theme: dark
+    code-block-height: 380px
+    highlight-style: github-dark
+    fontsize: 30px
+  html:
+    allow-html: true
+jupyter: python3
+---
+
+::: {.callout-note}
+In these modules you will learn:
+
+- Scene management, game state machines, and transitions
+- Background music, sound effects, channels, and spatial audio
+- Tile maps, camera systems, scrolling, and parallax backgrounds
+:::
+
+# Scenes & Game States
+
+## The Problem: what is a "game state"?
+
+A game is never in just one mode. It alternates between states:
+
+```
+┌─────────┐   ENTER    ┌──────────┐   PAUSE    ┌─────────┐
+│  MENU   │ ─────────► │   GAME   │ ─────────► │  PAUSE  │
+└─────────┘            └──────────┘            └─────────┘
+                            │                       │ RESUME
+                          DEAD                      ▼
+                            │                  ┌──────────┐
+                            └────────────────► │ GAME     │
+                                               └──────────┘
+                                                    │ 0 lives
+                                                    ▼
+                                               ┌──────────┐
+                                               │ GAME OVER│
+                                               └──────────┘
+```
+
+Without a proper state system, you end up with a jungle of `if game_state == "menu"` checks scattered everywhere. The **Scene pattern** solves this cleanly.
+
+## The Scene Base Class
+
+Every screen in the game is a **Scene**. Each scene knows how to:
+
+```python
+class Scene:
+    def enter(self):        # Called once when scene becomes active
+        pass
+
+    def exit(self):         # Called once when scene is deactivated
+        pass
+
+    def handle_event(self, event):   # Process pygame events
+        pass
+
+    def update(self, dt):   # Update logic; dt = delta time in seconds
+        pass
+
+    def draw(self, surface): # Render to the screen
+        pass
+```
+
+This interface forces you to keep each scene's logic **self-contained**. A `MenuScene` never touches `GameScene`'s variables.
+
+## The Scene Manager
+
+The Scene Manager owns a **stack** of scenes. The scene on top of the stack is the one that runs.
+
+```python
+class SceneManager:
+    def __init__(self):
+        self._stack = []
+
+    def push(self, scene):
+        """Add a scene on top — previous scene stays in memory."""
+        if self._stack:
+            self._stack[-1].exit()
+        self._stack.append(scene)
+        scene.enter()
+
+    def pop(self):
+        """Remove the top scene — reveals the scene below."""
+        self._stack.pop().exit()
+        if self._stack:
+            self._stack[-1].enter()
+
+    def replace(self, scene):
+        """Swap the current scene — no going back."""
+        if self._stack:
+            self._stack.pop().exit()
+        self._stack.append(scene)
+        scene.enter()
+```
+
+## Push vs Replace vs Pop
+
+| Method | Stack effect | Use case |
+|--------|-------------|----------|
+| `push(PauseScene)` | `[Menu, Game, Pause]` | Overlay — game stays in memory |
+| `pop()` | `[Menu, Game]` | Resume — return to previous scene |
+| `replace(GameOver)` | `[Menu, GameOver]` | Full transition — no going back |
+
+## Push vs Replace vs Pop
+
+```{python}
+# Simulate the scene stack behavior (without pygame)
+
+class FakeScene:
+    def __init__(self, name):
+        self.name = name
+    def enter(self): print(f"  ► {self.name}.enter()")
+    def exit(self):  print(f"  ◄ {self.name}.exit()")
+
+class FakeManager:
+    def __init__(self):
+        self._stack = []
+
+    def push(self, scene):
+        if self._stack: self._stack[-1].exit()
+        self._stack.append(scene)
+        scene.enter()
+        print(f"  Stack: {[s.name for s in self._stack]}\n")
+
+    def pop(self):
+        self._stack.pop().exit()
+        if self._stack: self._stack[-1].enter()
+        print(f"  Stack: {[s.name for s in self._stack]}\n")
+
+    def replace(self, scene):
+        if self._stack: self._stack.pop().exit()
+        self._stack.append(scene)
+        scene.enter()
+        print(f"  Stack: {[s.name for s in self._stack]}\n")
+
+mgr = FakeManager()
+print("=== PUSH Menu ===")
+mgr.push(FakeScene("MenuScene"))
+print("=== PUSH Game ===")
+mgr.push(FakeScene("GameScene"))
+print("=== PUSH Pause (overlay) ===")
+mgr.push(FakeScene("PauseScene"))
+print("=== POP (resume) ===")
+mgr.pop()
+print("=== REPLACE with GameOver ===")
+mgr.replace(FakeScene("GameOverScene"))
+```
+
+## Sharing Data Between Scenes
+
+Scenes are decoupled — they don't hold references to each other. Use the manager's `shared` dict to pass data:
+
+```python
+# In GameScene — store the score when dying
+self.manager.shared['score'] = self.score
+self.manager.replace(GameOverScene(self.manager))
+
+# In GameOverScene — read it back
+self.score = self.manager.shared.get('score', 0)
+```
+
+## Scene Transitions
+
+A transition is a visual effect that plays while swapping scenes. The key insight: **render both scenes to surfaces, then blend them**.
+
+```python
+class TransitionEngine:
+    def start(self, surf_from, surf_to, mode="fade", duration=0.5):
+        self.surf_from = surf_from.copy()
+        self.surf_to   = surf_to.copy()
+        self.progress  = 0.0
+        self.active    = True
+
+    def update(self, dt):
+        self.progress += dt / self.duration
+        if self.progress >= 1.0:
+            self.active = False
+
+    def draw(self, surface):
+        p = self.progress * self.progress * (3 - 2 * self.progress)  # Ease
+
+        if self.mode == "fade":
+            if p < 0.5:
+                alpha = int(255 * (1 - p * 2))
+                self.surf_from.set_alpha(alpha)
+                surface.blit(self.surf_from, (0, 0))
+            else:
+                alpha = int(255 * ((p - 0.5) * 2))
+                self.surf_to.set_alpha(alpha)
+                surface.blit(self.surf_to, (0, 0))
+
+        elif self.mode == "slide_left":
+            offset = int((1 - p) * WIDTH)
+            surface.blit(self.surf_from, (-offset, 0))
+            surface.blit(self.surf_to, (WIDTH - offset, 0))
+```
+
+## Scene Transitions
+
+```{python}
+# Demonstrate easing functions used in transitions
+
+import math
+
+def ease_linear(t):  return t
+def ease_in(t):      return t * t
+def ease_out(t):     return 1 - (1 - t) ** 2
+def ease_inout(t):   return t * t * (3 - 2 * t)
+
+print("t        linear   ease_in  ease_out  ease_inout")
+print("-" * 52)
+for i in range(11):
+    t = i / 10
+    print(f"  {t:.1f}     {ease_linear(t):.2f}    {ease_in(t):.2f}     "
+          f"{ease_out(t):.2f}      {ease_inout(t):.2f}")
+```
+
+## Scene transitions — Summary
+
+- `Scene` base class enforces `enter / exit / handle_event / update / draw`
+- `SceneManager` owns a **stack**: `push` overlays, `pop` returns, `replace` swaps
+- Share data between scenes via `manager.shared` dict
+- Transitions pre-render both scenes to surfaces, then blend them
+- Easing functions (`ease_inout`) make transitions feel smooth
+
+
