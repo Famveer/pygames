@@ -100,3 +100,36 @@ For labs, please bring your notebooks!
 
 --- 
 
+
+### Week 9
+
+{: .lecture}
+>Lecture 9: [Introduction to Game Physics](./Lectures/Lec9/)
+
+{: .lab}
+>Lab 8: [Introduction to Game Physics](./Labs/Lab8/)
+>
+
+--- 
+
+
+### Week 10
+
+{: .lecture}
+>Lecture 10: [Introduction to IA and states](./Lectures/Lec10/)
+
+{: .lab}
+>Lab 9: [Introduction to IA and states](./Labs/Lab9/)
+>
+
+--- 
+
+
+### Week 11
+
+{: .lab}
+>Lab 10: [Complete Game demo](./Labs/Lab10/)
+>
+
+--- 
+

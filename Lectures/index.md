@@ -31,3 +31,10 @@ Lectures sessions will help you understand the theory and concepts behind games.
 
 
 **Lecture 8**: [Introduction to Tilemaps](./Lec8)
+
+
+**Lecture 9**: [Introduction to Game Physics](./Lec9)
+
+
+**Lecture 10**: [Introduction to IA and states](./Lec10)
+

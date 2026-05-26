@@ -1,0 +1,374 @@
+---
+title: "Physics and Enemy AI"
+subtitle: "Pygame Game Development Course"
+author: "Felipe A. Moreno-Vera"
+lang: en
+format:
+  revealjs:
+    slide-number: true
+    chalkboard:
+      buttons: false
+    preview-links: auto
+    theme: dark
+    code-block-height: 380px
+    highlight-style: github-dark
+    fontsize: 30px
+  html:
+    allow-html: true
+jupyter: python3
+---
+
+::: {.callout-note}
+In these modules you will learn:
+
+- Gravity, velocity, acceleration, friction, variable jump height, coyote time, jump buffering, one-way platforms, moving platforms, and wall jumping
+- Steering behaviors (seek, flee, patrol, wander), line of sight, vision cones, and a full enemy Finite State Machine
+:::
+
+
+# ⚙️ Basic Physics
+
+## The Physics Update Loop
+
+Platformer physics is built on two fundamental equations applied every frame:
+
+```
+velocity += acceleration × dt      # Euler integration
+position += velocity   × dt
+```
+
+## The Physics Update Loop
+
+Platformer physics is built on two fundamental equations applied every frame:
+
+```
+velocity += acceleration × dt      # Euler integration
+position += velocity   × dt
+```
+
+`dt` (delta time) is the time elapsed since the last frame in **seconds**. Using `dt` makes the simulation **frame-rate independent**: the same behavior at 30 FPS and 120 FPS.
+
+```python
+# Every frame:
+vy    += GRAVITY * dt       # Gravity accelerates the fall
+y     += vy * dt            # Velocity moves the position
+```
+
+## The Physics Update Loop
+
+Platformer physics is built on two fundamental equations applied every frame:
+
+```
+velocity += acceleration × dt      # Euler integration
+position += velocity   × dt
+```
+
+`dt` (delta time) is the time elapsed since the last frame in **seconds**. Using `dt` makes the simulation **frame-rate independent**: the same behavior at 30 FPS and 120 FPS.
+
+```python
+# Every frame:
+vy    += GRAVITY * dt       # Gravity accelerates the fall
+y     += vy * dt            # Velocity moves the position
+```
+
+::: {.callout-important}
+Always multiply forces and velocities by `dt`. Without it, your game runs at different speeds on different hardware.
+:::
+
+## Gravity
+
+Gravity is simply a **constant downward acceleration** applied every frame:
+
+```python
+GRAVITY      = 900.0    # px/s²  — feel free to tune
+TERMINAL_VEL = 850.0    # cap: prevents infinite acceleration
+
+vy = min(vy + GRAVITY * dt, TERMINAL_VEL)
+y  += vy * dt
+```
+
+## Gravity
+
+Gravity is simply a **constant downward acceleration** applied every frame:
+
+```python
+GRAVITY      = 900.0    # px/s²  — feel free to tune
+TERMINAL_VEL = 850.0    # cap: prevents infinite acceleration
+
+vy = min(vy + GRAVITY * dt, TERMINAL_VEL)
+y  += vy * dt
+```
+
+```{python}
+# Simulate 1 second of freefall at 60 FPS
+
+GRAVITY      = 900.0
+TERMINAL_VEL = 850.0
+FPS          = 60
+dt           = 1 / FPS
+
+vy = 0.0
+y  = 0.0
+
+print("Freefall simulation (60 FPS, gravity=900 px/s²)")
+print(f"  {'frame':<8} {'vy (px/s)':<14} {'y (px)':<12} {'notes'}")
+print("  " + "-" * 52)
+
+for frame in range(FPS + 1):
+    vy = min(vy + GRAVITY * dt, TERMINAL_VEL)
+    y += vy * dt
+    if frame % 10 == 0 or frame == FPS:
+        note = "terminal vel reached" if vy >= TERMINAL_VEL else ""
+        print(f"  {frame:<8} {vy:<14.1f} {y:<12.1f} {note}")
+```
+
+## Jumping
+
+A jump is just an **instantaneous upward velocity** applied when the player is on the ground:
+
+```python
+JUMP_VY = -460.0    # Negative = upward (Y grows downward in Pygame)
+
+if player_pressed_jump and on_ground:
+    vy = JUMP_VY
+```
+
+## Variable Jump Height
+
+Hold the jump button for a higher jump; release early for a short hop. The trick: **reduce gravity while the button is held** and the player is still rising.
+
+```python
+JUMP_FRAMES_MAX = 20   # Max frames of reduced gravity
+JUMP_FRAMES_MIN = 6    # Must hold at least this long
+
+if jumping:
+    jump_frames += 1
+    if not keys[K_SPACE] and jump_frames > JUMP_FRAMES_MIN:
+        jumping = False          # Cut jump short
+    if jump_frames >= JUMP_FRAMES_MAX:
+        jumping = False
+
+grav_mult = 0.4 if jumping else 1.0   # Reduced gravity = higher jump
+vy += GRAVITY * grav_mult * dt
+```
+
+## Coyote Time
+
+The **coyote time** grace period lets the player jump for a few frames after walking off a ledge — feels fair and responsive:
+
+```python
+COYOTE_FRAMES = 8
+
+if on_ground:
+    coyote_timer = COYOTE_FRAMES
+elif coyote_timer > 0:
+    coyote_timer -= 1
+
+can_jump = on_ground or coyote_timer > 0
+```
+
+## Jump Buffering
+
+If the player presses jump just before landing, **buffer the input** and execute it on contact:
+
+```python
+BUFFER_FRAMES = 10
+
+# On KEYDOWN event:
+jump_buffer = BUFFER_FRAMES
+
+# In update():
+if jump_buffer > 0:
+    jump_buffer -= 1
+if jump_buffer > 0 and can_jump:
+    vy = JUMP_VY
+    jump_buffer = 0
+```
+
+## Jump Buffering
+
+```{python}
+# Quantify coyote time and jump buffer improvement
+
+FPS        = 60
+coyote_f   = 8
+buffer_f   = 10
+
+coyote_ms  = coyote_f / FPS * 1000
+buffer_ms  = buffer_f / FPS * 1000
+
+print("Coyote time and jump buffer values")
+print("=" * 45)
+print(f"  Coyote frames  : {coyote_f} frames = {coyote_ms:.0f} ms")
+print(f"  Buffer frames  : {buffer_f} frames = {buffer_ms:.0f} ms")
+print()
+print("Why it matters:")
+print("  Without coyote: walk off ledge → can't jump (feels unfair)")
+print("  With coyote:    8 frames grace → feels responsive")
+print()
+print("  Without buffer: press jump 1 frame early → nothing happens")
+print("  With buffer:    input held for 10 frames → auto-fires on land")
+```
+
+## Collision Resolution
+
+The most reliable pattern: **move on one axis, resolve, then move on the other**.
+
+```python
+# Step 1: move horizontally
+x += vx * dt
+for platform in platforms:
+    if player_rect.colliderect(platform.rect):
+        if vx > 0: x = platform.rect.left  - player_w   # Pushed left
+        if vx < 0: x = platform.rect.right               # Pushed right
+        vx = 0
+
+# Step 2: move vertically
+y += vy * dt
+on_ground = False
+for platform in platforms:
+    if player_rect.colliderect(platform.rect):
+        if vy > 0:                                        # Falling
+            y        = platform.rect.top - player_h
+            vy       = 0
+            on_ground = True
+        elif vy < 0:                                      # Rising
+            y  = platform.rect.bottom
+            vy = 0
+```
+
+## Collision Resolution
+
+The most reliable pattern: **move on one axis, resolve, then move on the other**.
+
+```python
+# Step 1: move horizontally
+x += vx * dt
+for platform in platforms:
+    if player_rect.colliderect(platform.rect):
+        if vx > 0: x = platform.rect.left  - player_w   # Pushed left
+        if vx < 0: x = platform.rect.right               # Pushed right
+        vx = 0
+
+# Step 2: move vertically
+y += vy * dt
+on_ground = False
+for platform in platforms:
+    if player_rect.colliderect(platform.rect):
+        if vy > 0:                                        # Falling
+            y        = platform.rect.top - player_h
+            vy       = 0
+            on_ground = True
+        elif vy < 0:                                      # Rising
+            y  = platform.rect.bottom
+            vy = 0
+```
+
+::: {.callout-tip}
+Always resolve X and Y **separately**. Combined resolution causes the player to clip corners and stick to walls incorrectly.
+:::
+
+## One-Way Platforms
+
+Only solid from the top — the player can jump through from below:
+
+```python
+for platform in one_way_platforms:
+    if player_rect.colliderect(platform.rect):
+        # Only resolve if falling AND was above the platform top last frame
+        if vy > 0 and (prev_y + player_h) <= platform.rect.top + 4:
+            y        = platform.rect.top - player_h
+            vy       = 0
+            on_ground = True
+        # If rising: ignore (pass through)
+```
+
+## Moving Platforms — Velocity Inheritance
+
+When standing on a moving platform, add the platform's velocity to the player:
+
+```python
+class MovingPlatform:
+    def update(self, dt):
+        prev_x     = self.rect.x
+        self.rect.x += self.direction * self.speed * dt
+        self.vel_x  = (self.rect.x - prev_x) / dt   # Derived velocity
+
+# In player update:
+if on_ground and standing_on:
+    x += standing_on.vel_x * dt   # Inherit platform movement
+```
+
+## Acceleration-Based Movement
+
+Instant velocity feels stiff. Acceleration gives weight and momentum:
+
+```python
+MOVE_ACCEL   = 1800.0   # px/s² — ground acceleration
+AIR_ACCEL    = 900.0    # Less control in the air
+MAX_VX       = 240.0
+
+accel = MOVE_ACCEL if on_ground else AIR_ACCEL
+
+if pressing_right:
+    vx += (MAX_VX - vx) * (accel / MAX_VX) * dt   # Accelerate toward target
+else:
+    vx -= math.copysign(MOVE_ACCEL * dt, vx)       # Decelerate
+```
+
+## Acceleration-Based Movement
+
+Instant velocity feels stiff. Acceleration gives weight and momentum:
+
+```python
+MOVE_ACCEL   = 1800.0   # px/s² — ground acceleration
+AIR_ACCEL    = 900.0    # Less control in the air
+MAX_VX       = 240.0
+
+accel = MOVE_ACCEL if on_ground else AIR_ACCEL
+
+if pressing_right:
+    vx += (MAX_VX - vx) * (accel / MAX_VX) * dt   # Accelerate toward target
+else:
+    vx -= math.copysign(MOVE_ACCEL * dt, vx)       # Decelerate
+```
+
+```{python}
+import math
+
+def simulate_movement(accel, max_vx, frames=30, fps=60):
+    dt = 1 / fps
+    vx = 0.0
+    results = []
+    for f in range(frames):
+        # Accelerate right
+        vx += (max_vx - vx) * (accel / max_vx) * dt
+        vx  = min(vx, max_vx)
+        results.append(round(vx, 1))
+    return results
+
+inst   = [240.0] * 30                           # Instant velocity
+accel  = simulate_movement(1800, 240, 30)       # Acceleration-based
+
+print("Velocity profile over 30 frames")
+print(f"  {'Frame':<8} {'Instant':<12} {'Accelerated'}")
+print("  " + "-" * 34)
+for i in range(0, 30, 5):
+    print(f"  {i:<8} {inst[i]:<12.1f} {accel[i]:.1f}")
+print()
+print("Accelerated movement reaches max speed gradually → feels weighted")
+```
+
+## Physics — Summary {.unnumbered}
+
+- `velocity += acceleration × dt` then `position += velocity × dt` — always use `dt`
+- Gravity = constant downward acceleration + terminal velocity cap
+- Variable jump = reduce gravity while holding jump button
+- **Coyote time** = jump grace period (8 frames) after walking off a ledge
+- **Jump buffering** = remember jump input (10 frames) before landing
+- Separate X and Y collision resolution to avoid corner-clipping
+- One-way platforms: only resolve collision when falling **and** above the top edge
+- Moving platforms: derive `vel_x` from position delta, inherit into player
+- Acceleration-based movement: `vx += (target - vx) * accel_factor * dt`
+
+
