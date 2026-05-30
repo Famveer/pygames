@@ -14,7 +14,7 @@ To setup the environment, you can use pyenv or conda (recommended). Then, instal
 pip install -r requirements.txt
 ```
 
-Download the rewuirements file [here](./../requirements.txt).
+Download the requirements file [here](./../requirements.txt).
 
 ---
 
