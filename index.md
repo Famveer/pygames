@@ -22,3 +22,11 @@ By the end of the course, students will have acquired:
 
 ---
 
+# References
+
+* [Pygame tutorial series](https://eli.thegreenplace.net/2008/12/13/writing-a-game-in-python-with-pygame-part-i/)  
+* [Game programing](https://www.amazon.com/Game-Programming-Line-Express-Learning/dp/0470068221)  
+* [Litle book of pygame](https://mathspp.com/books/the-little-book-of-pygame)
+
+
+---
