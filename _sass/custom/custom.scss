@@ -1,0 +1,18 @@
+.lang-switcher-link {
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  color: inherit;
+  opacity: 0.6;
+  text-decoration: none;
+}
+
+.lang-switcher-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.lang-switcher-active {
+  opacity: 1;
+  font-weight: 700;
+  border: 1px solid currentColor;
+}

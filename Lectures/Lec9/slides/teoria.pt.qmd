@@ -1,0 +1,373 @@
+---
+title: "Physics e AI de Inimigos"
+subtitle: "Curso de Desenvolvimento de Jogos com Pygame"
+author: "Felipe A. Moreno-Vera"
+lang: pt
+format:
+  revealjs:
+    slide-number: true
+    chalkboard:
+      buttons: false
+    preview-links: auto
+    theme: dark
+    code-block-height: 380px
+    highlight-style: github-dark
+    fontsize: 30px
+  html:
+    allow-html: true
+jupyter: python3
+---
+
+::: {.callout-note}
+Nestes módulos você vai aprender:
+
+- Gravity, velocidade, aceleração, atrito, altura de salto variável, coyote time, jump buffering, plataformas de mão única, plataformas móveis, e wall jumping
+- Steering behaviors (seek, flee, patrol, wander), line of sight, vision cones, e uma Finite State Machine completa para inimigos
+:::
+
+
+# ⚙️ Physics Básica
+
+## O Physics Update Loop
+
+A physics de plataformas se baseia em duas equações fundamentais aplicadas a cada frame:
+
+```
+velocity += acceleration × dt      # Euler integration
+position += velocity   × dt
+```
+
+## O Physics Update Loop
+
+A physics de plataformas se baseia em duas equações fundamentais aplicadas a cada frame:
+
+```
+velocity += acceleration × dt      # Euler integration
+position += velocity   × dt
+```
+
+`dt` (delta time) é o tempo decorrido desde o último frame, em **segundos**. Usar `dt` torna a simulação **independente do frame rate**: o mesmo comportamento a 30 FPS e a 120 FPS.
+
+```python
+# Every frame:
+vy    += GRAVITY * dt       # Gravity accelerates the fall
+y     += vy * dt            # Velocity moves the position
+```
+
+## O Physics Update Loop
+
+A physics de plataformas se baseia em duas equações fundamentais aplicadas a cada frame:
+
+```
+velocity += acceleration × dt      # Euler integration
+position += velocity   × dt
+```
+
+`dt` (delta time) é o tempo decorrido desde o último frame, em **segundos**. Usar `dt` torna a simulação **independente do frame rate**: o mesmo comportamento a 30 FPS e a 120 FPS.
+
+```python
+# Every frame:
+vy    += GRAVITY * dt       # Gravity accelerates the fall
+y     += vy * dt            # Velocity moves the position
+```
+
+::: {.callout-important}
+Sempre multiplique forças e velocidades por `dt`. Sem isso, seu jogo vai rodar em velocidades diferentes dependendo do hardware.
+:::
+
+## Gravity
+
+Gravity é simplesmente uma **aceleração constante para baixo** aplicada a cada frame:
+
+```python
+GRAVITY      = 900.0    # px/s²  — feel free to tune
+TERMINAL_VEL = 850.0    # cap: prevents infinite acceleration
+
+vy = min(vy + GRAVITY * dt, TERMINAL_VEL)
+y  += vy * dt
+```
+
+## Gravity
+
+Gravity é simplesmente uma **aceleração constante para baixo** aplicada a cada frame:
+
+```python
+GRAVITY      = 900.0    # px/s²  — feel free to tune
+TERMINAL_VEL = 850.0    # cap: prevents infinite acceleration
+
+vy = min(vy + GRAVITY * dt, TERMINAL_VEL)
+y  += vy * dt
+```
+
+```{python}
+# Simulate 1 second of freefall at 60 FPS
+
+GRAVITY      = 900.0
+TERMINAL_VEL = 850.0
+FPS          = 60
+dt           = 1 / FPS
+
+vy = 0.0
+y  = 0.0
+
+print("Simulação de queda livre (60 FPS, gravity=900 px/s²)")
+print(f"  {'frame':<8} {'vy (px/s)':<14} {'y (px)':<12} {'notas'}")
+print("  " + "-" * 52)
+
+for frame in range(FPS + 1):
+    vy = min(vy + GRAVITY * dt, TERMINAL_VEL)
+    y += vy * dt
+    if frame % 10 == 0 or frame == FPS:
+        note = "terminal velocity atingida" if vy >= TERMINAL_VEL else ""
+        print(f"  {frame:<8} {vy:<14.1f} {y:<12.1f} {note}")
+```
+
+## Jumping
+
+Um salto é simplesmente uma **velocidade instantânea para cima** aplicada quando o jogador está no chão:
+
+```python
+JUMP_VY = -460.0    # Negative = upward (Y grows downward in Pygame)
+
+if player_pressed_jump and on_ground:
+    vy = JUMP_VY
+```
+
+## Variable Jump Height
+
+Segure o botão de pulo para um salto mais alto; solte antes para um salto curto. O truque: **reduzir a gravity enquanto o botão está pressionado** e o jogador ainda está subindo.
+
+```python
+JUMP_FRAMES_MAX = 20   # Max frames of reduced gravity
+JUMP_FRAMES_MIN = 6    # Must hold at least this long
+
+if jumping:
+    jump_frames += 1
+    if not keys[K_SPACE] and jump_frames > JUMP_FRAMES_MIN:
+        jumping = False          # Cut jump short
+    if jump_frames >= JUMP_FRAMES_MAX:
+        jumping = False
+
+grav_mult = 0.4 if jumping else 1.0   # Reduced gravity = higher jump
+vy += GRAVITY * grav_mult * dt
+```
+
+## Coyote Time
+
+O período de graça do **coyote time** permite que o jogador pule durante alguns frames depois de andar para fora de uma plataforma — parece justo e responsivo:
+
+```python
+COYOTE_FRAMES = 8
+
+if on_ground:
+    coyote_timer = COYOTE_FRAMES
+elif coyote_timer > 0:
+    coyote_timer -= 1
+
+can_jump = on_ground or coyote_timer > 0
+```
+
+## Jump Buffering
+
+Se o jogador pressionar pular pouco antes de aterrissar, **guarde o input em um buffer** e execute-o ao entrar em contato:
+
+```python
+BUFFER_FRAMES = 10
+
+# On KEYDOWN event:
+jump_buffer = BUFFER_FRAMES
+
+# In update():
+if jump_buffer > 0:
+    jump_buffer -= 1
+if jump_buffer > 0 and can_jump:
+    vy = JUMP_VY
+    jump_buffer = 0
+```
+
+## Jump Buffering
+
+```{python}
+# Quantify coyote time and jump buffer improvement
+
+FPS        = 60
+coyote_f   = 8
+buffer_f   = 10
+
+coyote_ms  = coyote_f / FPS * 1000
+buffer_ms  = buffer_f / FPS * 1000
+
+print("Valores de Coyote time e jump buffer")
+print("=" * 45)
+print(f"  Coyote frames  : {coyote_f} frames = {coyote_ms:.0f} ms")
+print(f"  Buffer frames  : {buffer_f} frames = {buffer_ms:.0f} ms")
+print()
+print("Por que isso importa:")
+print("  Sem coyote: andar para fora da borda → não é possível pular (parece injusto)")
+print("  Com coyote:     8 frames de graça → parece responsive")
+print()
+print("  Sem buffer: pressionar pular 1 frame antes → nada acontece")
+print("  Com buffer:     input mantido por 10 frames → dispara automaticamente ao aterrissar")
+```
+
+## Collision Resolution
+
+O padrão mais confiável: **mova-se em um eixo, resolva a collision, e depois mova-se no outro**.
+
+```python
+# Step 1: move horizontally
+x += vx * dt
+for platform in platforms:
+    if player_rect.colliderect(platform.rect):
+        if vx > 0: x = platform.rect.left  - player_w   # Pushed left
+        if vx < 0: x = platform.rect.right               # Pushed right
+        vx = 0
+
+# Step 2: move vertically
+y += vy * dt
+on_ground = False
+for platform in platforms:
+    if player_rect.colliderect(platform.rect):
+        if vy > 0:                                        # Falling
+            y        = platform.rect.top - player_h
+            vy       = 0
+            on_ground = True
+        elif vy < 0:                                      # Rising
+            y  = platform.rect.bottom
+            vy = 0
+```
+
+## Collision Resolution
+
+O padrão mais confiável: **mova-se em um eixo, resolva a collision, e depois mova-se no outro**.
+
+```python
+# Step 1: move horizontally
+x += vx * dt
+for platform in platforms:
+    if player_rect.colliderect(platform.rect):
+        if vx > 0: x = platform.rect.left  - player_w   # Pushed left
+        if vx < 0: x = platform.rect.right               # Pushed right
+        vx = 0
+
+# Step 2: move vertically
+y += vy * dt
+on_ground = False
+for platform in platforms:
+    if player_rect.colliderect(platform.rect):
+        if vy > 0:                                        # Falling
+            y        = platform.rect.top - player_h
+            vy       = 0
+            on_ground = True
+        elif vy < 0:                                      # Rising
+            y  = platform.rect.bottom
+            vy = 0
+```
+
+::: {.callout-tip}
+Sempre resolva X e Y **separadamente**. Resolver os dois juntos faz o jogador atravessar cantos e ficar preso nas paredes de forma incorreta.
+:::
+
+## One-Way Platforms
+
+Sólidas apenas por cima — o jogador pode atravessá-las pulando por baixo:
+
+```python
+for platform in one_way_platforms:
+    if player_rect.colliderect(platform.rect):
+        # Only resolve if falling AND was above the platform top last frame
+        if vy > 0 and (prev_y + player_h) <= platform.rect.top + 4:
+            y        = platform.rect.top - player_h
+            vy       = 0
+            on_ground = True
+        # If rising: ignore (pass through)
+```
+
+## Moving Platforms — Velocity Inheritance
+
+Quando o jogador está parado sobre uma plataforma em movimento, some a velocidade da plataforma ao jogador:
+
+```python
+class MovingPlatform:
+    def update(self, dt):
+        prev_x     = self.rect.x
+        self.rect.x += self.direction * self.speed * dt
+        self.vel_x  = (self.rect.x - prev_x) / dt   # Derived velocity
+
+# In player update:
+if on_ground and standing_on:
+    x += standing_on.vel_x * dt   # Inherit platform movement
+```
+
+## Acceleration-Based Movement
+
+A velocidade instantânea parece rígida. A aceleração dá peso e momentum ao movimento:
+
+```python
+MOVE_ACCEL   = 1800.0   # px/s² — ground acceleration
+AIR_ACCEL    = 900.0    # Less control in the air
+MAX_VX       = 240.0
+
+accel = MOVE_ACCEL if on_ground else AIR_ACCEL
+
+if pressing_right:
+    vx += (MAX_VX - vx) * (accel / MAX_VX) * dt   # Accelerate toward target
+else:
+    vx -= math.copysign(MOVE_ACCEL * dt, vx)       # Decelerate
+```
+
+## Acceleration-Based Movement
+
+A velocidade instantânea parece rígida. A aceleração dá peso e momentum ao movimento:
+
+```python
+MOVE_ACCEL   = 1800.0   # px/s² — ground acceleration
+AIR_ACCEL    = 900.0    # Less control in the air
+MAX_VX       = 240.0
+
+accel = MOVE_ACCEL if on_ground else AIR_ACCEL
+
+if pressing_right:
+    vx += (MAX_VX - vx) * (accel / MAX_VX) * dt   # Accelerate toward target
+else:
+    vx -= math.copysign(MOVE_ACCEL * dt, vx)       # Decelerate
+```
+
+```{python}
+import math
+
+def simulate_movement(accel, max_vx, frames=30, fps=60):
+    dt = 1 / fps
+    vx = 0.0
+    results = []
+    for f in range(frames):
+        # Accelerate right
+        vx += (max_vx - vx) * (accel / max_vx) * dt
+        vx  = min(vx, max_vx)
+        results.append(round(vx, 1))
+    return results
+
+inst   = [240.0] * 30                           # Instant velocity
+accel  = simulate_movement(1800, 240, 30)       # Acceleration-based
+
+print("Velocity profile em 30 frames")
+print(f"  {'Frame':<8} {'Instantânea':<12} {'Accelerated'}")
+print("  " + "-" * 34)
+for i in range(0, 30, 5):
+    print(f"  {i:<8} {inst[i]:<12.1f} {accel[i]:.1f}")
+print()
+print("O movimento Accelerated alcança max speed de forma gradual → parece weighted")
+```
+
+## Physics — Resumo {.unnumbered}
+
+- `velocity += acceleration × dt` e depois `position += velocity × dt` — sempre use `dt`
+- Gravity = aceleração constante para baixo + limite de terminal velocity
+- Variable jump = reduzir a gravity enquanto o botão de pulo está pressionado
+- **Coyote time** = período de graça de salto (8 frames) depois de andar para fora de uma plataforma
+- **Jump buffering** = lembrar o input de salto (10 frames) antes de aterrissar
+- Resolução separada de X e Y para evitar que o jogador atravesse cantos
+- One-way platforms: resolver a collision apenas ao cair **e** estar acima da borda superior
+- Moving platforms: derivar `vel_x` a partir do delta de posição, herdar no jogador
+- Acceleration-based movement: `vx += (target - vx) * accel_factor * dt`
+

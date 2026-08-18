@@ -1,0 +1,252 @@
+---
+title: "Sprites, Collisions y Animations"
+subtitle: "Curso de Desarrollo de Juegos con Pygame"
+author: "Felipe A. Moreno-Vera"
+lang: es
+format:
+  revealjs:
+    slide-number: true
+    chalkboard:
+      buttons: false
+    preview-links: auto
+    theme: dark
+    code-block-height: 380px
+    highlight-style: github-dark
+    fontsize: 30px
+  html:
+    allow-html: true
+jupyter: python3
+---
+
+
+# 🎬 Animations
+
+## ¿Cómo funciona la animation 2D?
+
+La animation funciona exactamente como un flipbook: una secuencia de imágenes (frames) que cambian a cierta velocidad para crear la ilusión de movimiento.
+
+```
+Frame 0    Frame 1    Frame 2    Frame 3
+  🧍         🚶         🧍         🚶
+  ↑          ↑          ↑          ↑
+ 100ms      100ms      100ms      100ms   → repeats
+```
+
+::: {.callout-important}
+La velocidad de animation ≠ FPS del juego. A 60 FPS, puedes animar a 10 FPS (cambiar de frame cada 6 frames del juego).
+:::
+
+## Spritesheet
+
+Un **spritesheet** es una única imagen que contiene todos los frames de todas las animations. Se usa para:
+
+- Reducir el número de archivos individuales
+- Cargar la memoria de la GPU de forma más eficiente
+- Simplificar la gestión de las animations
+
+```
+spritesheet.png:
+┌──────────────────────────────────────────────────┐
+│ [idle_0][idle_1][idle_2][idle_3]                 │  ← row 0: idle
+│ [walk_0][walk_1][walk_2][walk_3][walk_4][walk_5] │  ← row 1: walk
+│ [jump_0][jump_1][jump_2]                         │  ← row 2: jump
+│ [attack_0][attack_1][attack_2][attack_3]         │  ← row 3: attack
+└──────────────────────────────────────────────────┘
+```
+
+## Spritesheet
+
+Un **spritesheet** es una única imagen que contiene todos los frames de todas las animations. Se usa para:
+
+- Reducir el número de archivos individuales
+- Cargar la memoria de la GPU de forma más eficiente
+- Simplificar la gestión de las animations
+
+```
+spritesheet.png:
+┌──────────────────────────────────────────────────┐
+│ [idle_0][idle_1][idle_2][idle_3]                 │  ← row 0: idle
+│ [walk_0][walk_1][walk_2][walk_3][walk_4][walk_5] │  ← row 1: walk
+│ [jump_0][jump_1][jump_2]                         │  ← row 2: jump
+│ [attack_0][attack_1][attack_2][attack_3]         │  ← row 3: attack
+└──────────────────────────────────────────────────┘
+```
+
+Para extraer un frame usa `Surface.subsurface(rect)`:
+
+```python
+sheet = pygame.image.load("spritesheet.png").convert_alpha()
+SIZE = 64  # Frame size
+
+# Extract frame at column=2, row=1
+frame = sheet.subsurface(pygame.Rect(2 * SIZE, 1 * SIZE, SIZE, SIZE))
+```
+
+## Animation Timer
+
+El timer controla cuándo avanzar al siguiente frame. Hay dos enfoques:
+
+## Animation Timer
+
+El timer controla cuándo avanzar al siguiente frame. Hay dos enfoques:
+
+### Enfoque 1 — Frame counter (más simple)
+
+```python
+self.current_frame = 0
+self.counter       = 0
+self.anim_speed    = 8  # Change frame every 8 game frames
+
+def update(self):
+    self.counter += 1
+    if self.counter >= self.anim_speed:
+        self.counter = 0
+        self.current_frame = (self.current_frame + 1) % len(self.frames)
+    self.image = self.frames[self.current_frame]
+```
+
+## Animation Timer
+
+El timer controla cuándo avanzar al siguiente frame. Hay dos enfoques:
+
+### Enfoque 1 — Frame counter (más simple)
+
+```python
+self.current_frame = 0
+self.counter       = 0
+self.anim_speed    = 8  # Change frame every 8 game frames
+
+def update(self):
+    self.counter += 1
+    if self.counter >= self.anim_speed:
+        self.counter = 0
+        self.current_frame = (self.current_frame + 1) % len(self.frames)
+    self.image = self.frames[self.current_frame]
+```
+
+### Enfoque 2 — Millisecond timer (recomendado)
+
+```python
+self.current_frame  = 0
+self.last_update    = pygame.time.get_ticks()  # current ms
+self.frame_duration = 100  # ms per frame (100ms = 10 anim FPS)
+
+def update(self):
+    now = pygame.time.get_ticks()
+    if now - self.last_update >= self.frame_duration:
+        self.last_update = now
+        self.current_frame = (self.current_frame + 1) % len(self.frames)
+    self.image = self.frames[self.current_frame]
+```
+
+## Animation Timer
+
+El timer controla cuándo avanzar al siguiente frame.
+
+::: {.callout-tip}
+**Approach 2** es preferido porque si el FPS del juego baja, la animation se sigue reproduciendo a la misma velocidad en tiempo real en pantalla.
+:::
+
+## Animation State Machine
+
+Un personaje tiene múltiples animations según su state. La **state machine** decide cuál reproducir.
+
+```
+                 ┌─────────────────────┐
+                 │       IDLE          │
+                 │  (standing still)   │
+                 └─────┬───────┬───────┘
+                       │       │
+               move    │       │ airborne
+               key     ↓       ↓
+               ┌───────────┐ ┌───────────┐
+               │   WALK    │ │   JUMP    │
+               │ (walking) │ │ (jumping) │
+               └─────┬─────┘ └─────┬─────┘
+                     │ release     │ land
+                     └──────┬──────┘
+                            ↓
+                          IDLE
+```
+
+## Animation State Machine -- código
+
+```python
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        ...
+        self.state = 'idle'   # Current state
+        self.animations = {
+            'idle':   [frame_idle_0, frame_idle_1, frame_idle_2],
+            'walk':   [frame_walk_0, frame_walk_1, frame_walk_2, frame_walk_3],
+            'jump':   [frame_jump_0, frame_jump_1],
+        }
+
+    def change_state(self, new_state):
+        if self.state != new_state:        # Only if it actually changed
+            self.state = new_state
+            self.current_frame = 0         # Reset animation on state change
+
+    def update(self):
+        # Determine state
+        keys = pygame.key.get_pressed()
+        if self.airborne:
+            self.change_state('jump')
+        elif keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
+            self.change_state('walk')
+        else:
+            self.change_state('idle')
+
+        # Animate
+        frames = self.animations[self.state]
+        self.image = frames[self.current_frame % len(frames)]
+```
+
+## State Machine Simulation
+
+```{python}
+class StateMachine:
+    def __init__(self):
+        self.state = 'idle'
+        self.current_frame = 0
+        self.frames_per_state = {'idle': 3, 'walk': 4, 'jump': 2, 'attack': 4}
+        self.history = []
+
+    def change_state(self, new):
+        if self.state != new:
+            self.history.append(f"  {self.state} → {new}")
+            self.state = new
+            self.current_frame = 0  # Reset on state change
+
+    def tick(self):
+        total = self.frames_per_state[self.state]
+        self.current_frame = (self.current_frame + 1) % total
+        return f"{self.state}[{self.current_frame}/{total-1}]"
+
+# Simulate a sequence of actions
+sm = StateMachine()
+sequence = [
+    ('idle', 3), ('walk', 5), ('jump', 4),
+    ('idle', 2), ('attack', 5), ('idle', 3),
+]
+
+print("Simulación de la state machine:")
+print("=" * 45)
+for action, duration in sequence:
+    sm.change_state(action)
+    frames_out = [sm.tick() for _ in range(duration)]
+    print(f"  {' → '.join(frames_out)}")
+
+print()
+print("Transiciones de state:")
+for h in sm.history:
+    print(h)
+```
+
+## Animations — Resumen {.unnumbered}
+
+- Spritesheet = una única imagen que contiene todos los frames
+- ms timer = independiente del FPS (approach preferido)
+- State machine = determina qué animation reproducir
+- Reinicia `current_frame = 0` cada vez que cambia el state
+

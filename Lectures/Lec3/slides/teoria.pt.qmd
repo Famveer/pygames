@@ -1,0 +1,209 @@
+---
+title: "Sprites, Collisions e Animations"
+subtitle: "Pygame Game Development Course"
+author: "Felipe A. Moreno-Vera"
+lang: pt
+format:
+  revealjs:
+    slide-number: true
+    chalkboard:
+      buttons: false
+    preview-links: auto
+    theme: dark
+    code-block-height: 380px
+    highlight-style: github-dark
+    fontsize: 30px
+  html:
+    allow-html: true
+jupyter: python3
+---
+
+::: {.callout-note}
+Nestes módulos você vai aprender:
+
+- O que é um Sprite, a classe `pygame.sprite.Sprite`, groups, e transparency
+- `pygame.Rect` em profundidade, tipos de collision, e collision response
+- Animation baseada em frames, spritesheets, e a state machine de animation
+:::
+
+# Sprites e Imagens
+
+## O que é um Sprite?
+
+No desenvolvimento de jogos, um **sprite** é qualquer objeto visual do jogo: o jogador, um inimigo, uma bala, um item coletável. O termo vem dos chips gráficos dos anos 80 que gerenciavam objetos 2D independentes sobre um fundo.
+
+No Pygame, `pygame.sprite.Sprite` é uma classe base que fornece estrutura para gerenciar os objetos do jogo de forma organizada. Cada sprite tem dois atributos obrigatórios:
+
+- **`self.image`** → a Surface visual (o desenho)
+- **`self.rect`** → o retângulo que define a posição e o tamanho
+
+```
+ self.image            self.rect
+ ┌──────────┐          ┌──────────┐
+ │  pixels  │          │ x, y     │  ← position on screen
+ │  (Surface│          │ w, h     │  ← width and height
+ │   2D)    │          │ center   │  ← and many helper props
+ └──────────┘          └──────────┘
+```
+
+## Anatomia de um Sprite
+
+```python
+class Player(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()           # MANDATORY: call the parent __init__
+
+        # image: Surface with the drawing
+        self.image = pygame.Surface((48, 48))
+        self.image.fill((50, 120, 220))   # Solid blue
+
+        # rect: position and size on screen
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)   # Place on screen
+
+        # Game-specific attributes
+        self.speed = 4
+
+    def update(self):                # Called by the group every frame
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:  self.rect.x -= self.speed
+        if keys[pygame.K_RIGHT]: self.rect.x += self.speed
+```
+
+## Por que usar Sprite em vez de variáveis soltas?
+
+| Sem Sprite | Com Sprite |
+|----------------|-------------|
+| `player_x`, `player_y`, `player_img`... | `player.rect.x`, `player.image` |
+| Lógica espalhada por todo o código | Encapsulada na classe |
+| Collisions manuais complicadas | Automáticas com `spritecollide()` |
+| Desenhar objeto por objeto | `group.draw(screen)` |
+
+## Propriedades de Rect
+
+```{python}
+# Simulating Sprite attributes (without pygame)
+
+class SimulatedRect:
+    """Simulates the main attributes of pygame.Rect"""
+    def __init__(self, x, y, w, h):
+        self.x, self.y = x, y
+        self.width, self.height = w, h
+
+    @property
+    def center(self): return (self.x + self.width//2, self.y + self.height//2)
+    @property
+    def topleft(self): return (self.x, self.y)
+    @property
+    def topright(self): return (self.x + self.width, self.y)
+    @property
+    def bottomleft(self): return (self.x, self.y + self.height)
+    @property
+    def right(self): return self.x + self.width
+    @property
+    def bottom(self): return self.y + self.height
+    @property
+    def centerx(self): return self.x + self.width // 2
+    @property
+    def centery(self): return self.y + self.height // 2
+
+rect = SimulatedRect(100, 50, 48, 48)
+
+print("pygame.Rect properties:")
+print(f"  rect.x, rect.y      = {rect.x}, {rect.y}        ← canto superior esquerdo")
+print(f"  rect.width, height  = {rect.width}, {rect.height}       ← tamanho")
+print(f"  rect.center         = {rect.center}   ← ponto central")
+print(f"  rect.topleft        = {rect.topleft}  ← alias de (x, y)")
+print(f"  rect.topright       = {rect.topright} ← canto superior direito")
+print(f"  rect.bottomleft     = {rect.bottomleft} ← canto inferior esquerdo")
+print(f"  rect.right          = {rect.right}       ← borda direita")
+print(f"  rect.bottom         = {rect.bottom}       ← borda inferior")
+print()
+print("Mover atribuindo qualquer propriedade:")
+print("  rect.center = (400, 300)  → centraliza o sprite")
+print("  rect.topright = (800, 0)  → canto superior direito da tela")
+```
+
+## Sprite Groups
+
+Um `pygame.sprite.Group` é uma coleção de sprites com superpoderes integrados:
+
+```python
+all_sprites = pygame.sprite.Group()    # General group
+bullets     = pygame.sprite.Group()    # Specific group
+enemies     = pygame.sprite.Group()
+
+# Adding sprites
+player = Player(400, 300)
+all_sprites.add(player)
+bullets.add(Bullet(400, 300))
+
+# Inside the Game Loop:
+all_sprites.update()          # Calls update() on ALL sprites
+all_sprites.draw(screen)      # Draws ALL sprites at once
+
+# Remove a sprite from ALL its groups
+sprite.kill()
+```
+
+Um sprite pode pertencer a **múltiplos groups** ao mesmo tempo.
+
+## Carregando Imagens
+
+```python
+# Load from file
+image = pygame.image.load("player.png")
+
+# IMPORTANT: convert for better performance
+image = image.convert()         # No transparency
+image = image.convert_alpha()   # With transparency (PNG with alpha channel)
+
+# Make one color transparent (for sprites without an alpha channel)
+image.set_colorkey((255, 0, 255))  # Magenta = transparent
+
+# Scale
+image = pygame.transform.scale(image, (64, 64))
+```
+
+## Transparency e Surfaces
+
+Pygame tem três níveis de transparency:
+
+| Método | Como funciona | Uso típico |
+|--------|--------------|-------------|
+| `Surface.set_alpha(0-255)` | Transparency global de toda a Surface | Fade in/out, HUDs |
+| `Surface.set_colorkey(color)` | Uma cor específica se torna transparente | Sprites sem alpha no PNG |
+| `convert_alpha()` + PNG | Canal alpha por pixel | Sprites com bordas suaves |
+
+
+## Transparency e Surfaces
+
+Pygame tem três níveis de transparency:
+
+| Método | Como funciona | Uso típico |
+|--------|--------------|-------------|
+| `Surface.set_alpha(0-255)` | Transparency global de toda a Surface | Fade in/out, HUDs |
+| `Surface.set_colorkey(color)` | Uma cor específica se torna transparente | Sprites sem alpha no PNG |
+| `convert_alpha()` + PNG | Canal alpha por pixel | Sprites com bordas suaves |
+
+```python
+# Semi-transparent surface
+surf = pygame.Surface((200, 100))
+surf.set_alpha(128)   # 0 = invisible, 255 = solid
+surf.fill((0, 0, 0))  # Semi-transparent black overlay
+
+# Surface with per-pixel alpha support
+surf = pygame.Surface((64, 64), pygame.SRCALPHA)
+# Now you can draw with (R, G, B, A) colors
+pygame.draw.circle(surf, (255, 0, 0, 180), (32, 32), 30)
+```
+
+## Sprite — Resumo {.unnumbered}
+
+- `Sprite` = Classe base — self.image e self.rect são obrigatórios
+- `Group` = Coleção que gerencia update() e draw() para todos os sprites
+- `kill()` = Remove o sprite de todos os seus groups (o destrói do jogo)
+- `convert()` = Otimiza a imagem para o display atual (melhor FPS)
+- `set_alpha` = Transparency global 0-255
+- `SRCALPHA` = Flag para uma surface com canal alpha por pixel
+

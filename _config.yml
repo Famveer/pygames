@@ -6,6 +6,14 @@ remote_theme: just-the-docs/just-the-docs
 url: "https://famveer.github.io"
 baseurl: "/pygames"
 
+plugins:
+  - jekyll-polyglot
+
+languages: ["en", "es", "pt"]
+default_lang: "en"
+exclude_from_localization: ["assets"]
+parallel_localization: true
+
 #aux_links:
 #  Template Repository: https://github.com/just-the-docs/just-the-docs-template
 

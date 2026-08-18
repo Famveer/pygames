@@ -1,0 +1,588 @@
+---
+title: "Git para Iniciantes"
+subtitle: "Controle de versão do zero — edição Linux"
+author: "Felipe A. Moreno-Vera"
+lang: pt
+format:
+  revealjs:
+    slide-number: true
+    chalkboard:
+      buttons: false
+    preview-links: auto
+    theme: dark
+    code-block-height: 380px
+    highlight-style: github-dark
+    fontsize: 30px
+  html:
+    allow-html: true
+---
+
+## O que você vai aprender
+
+- O que é o Git e **por que todo desenvolvedor o usa**
+- Como instalar e configurar o Git no Linux
+- Os conceitos essenciais: repos, commits, branches
+- Os comandos essenciais do dia a dia
+- Como trabalhar com **GitHub / GitLab**
+- Como corrigir os erros mais comuns
+
+::: {.callout-note}
+Não é necessária experiência prévia. Se você consegue abrir um terminal, já está pronto.
+:::
+
+---
+
+## O que é o Git?
+
+Git é um **sistema de controle de versão** — ele registra cada mudança que você faz nos seus arquivos ao longo do tempo.
+
+Pense nele como um **sistema de save de um videogame**, mas para código:
+
+- Você pode voltar a qualquer save anterior
+- Várias pessoas podem jogar (trabalhar) ao mesmo tempo
+- Você pode tentar coisas arriscadas em um slot separado sem quebrar o jogo principal
+
+::: {.callout-tip}
+Git ≠ GitHub. **Git** é a ferramenta. **GitHub** é um site que hospeda seus repositórios Git online.
+:::
+
+---
+
+## Por que se importar?
+
+::: columns
+::: {.column style="width:50%; font-size: 0.8em;"}
+**Sem Git**
+
+- `project_final.py`
+- `project_final_v2.py`
+- `project_FINAL_USE_THIS.py`
+- `project_FINAL_fixed.py`
+- `project_FINAL_fixed2_omg.py`
+:::
+
+::: {.column style="width:50%; font-size: 0.8em;"}
+**Com Git**
+
+- `project.py`
+- Histórico completo de cada mudança
+- Quem mudou o quê e quando
+- Fácil desfazer qualquer coisa
+- Colaboração segura
+:::
+:::
+
+---
+
+## 1. Instalando o Git no Linux
+
+Abra um terminal e execute o comando da sua distro:
+
+**Ubuntu / Debian / Mint**
+```bash
+sudo apt update
+sudo apt install git
+```
+
+**Fedora / RHEL / CentOS**
+```bash
+sudo dnf install git
+```
+
+**Arch / Manjaro**
+```bash
+sudo pacman -S git
+```
+
+**Verifique a instalação:**
+```bash
+git --version
+# git version 2.x.x
+```
+
+---
+
+## 2. Configuração inicial
+
+Antes de usar o Git, diga a ele quem você é. Essa informação é anexada a cada commit que você fizer.
+
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+```
+
+Defina seu editor de texto preferido (para as mensagens de commit):
+
+```bash
+# Usar o VS Code
+git config --global core.editor "code --wait"
+
+# Usar o nano (o mais simples para iniciantes)
+git config --global core.editor "nano"
+
+# Usar o vim
+git config --global core.editor "vim"
+```
+
+**Confira sua configuração:**
+```bash
+git config --list
+```
+
+---
+
+## 3. Conceitos essenciais
+
+| Conceito | O que significa |
+|---------|--------------|
+| **Repository (repo)** | Uma pasta rastreada pelo Git |
+| **Working directory** | Seus arquivos como você os vê |
+| **Staging area** | Mudanças selecionadas para o próximo commit |
+| **Commit** | Uma foto salva das suas mudanças em staging |
+| **Branch** | Uma linha independente de desenvolvimento |
+| **Remote** | Uma cópia do repo hospedada online (GitHub, etc.) |
+
+---
+
+## As três áreas do Git
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  YOUR PROJECT                       │
+│                                                     │
+│  ┌─────────────┐  git add  ┌──────────────┐        │
+│  │   Working   │ ────────► │   Staging    │        │
+│  │  Directory  │           │    Area      │        │
+│  └─────────────┘           └──────┬───────┘        │
+│         ▲                         │ git commit     │
+│         │                         ▼                │
+│         │                  ┌──────────────┐        │
+│         └──────────────────│  Repository  │        │
+│           git checkout     │  (History)   │        │
+│                            └──────────────┘        │
+└─────────────────────────────────────────────────────┘
+```
+
+::: {.callout-note}
+`git add` ainda não salva nada — apenas prepara as mudanças. `git commit` é o save de verdade.
+:::
+
+---
+
+## 4. Iniciando um repositório
+
+**Opção A — Começar do zero (projeto novo)**
+
+```bash
+mkdir my-project
+cd my-project
+git init
+```
+
+Isso cria uma pasta oculta `.git/` — é onde o Git guarda tudo.
+
+**Opção B — Clonar um repo existente do GitHub**
+
+```bash
+git clone https://github.com/username/repository.git
+
+# Clonar em uma pasta com nome específico
+git clone https://github.com/username/repository.git my-folder
+```
+
+**Confira o status do seu repo a qualquer momento:**
+```bash
+git status
+```
+
+---
+
+## 5. Seu primeiro commit — passo a passo
+
+**Passo 1: Crie ou modifique um arquivo**
+```bash
+echo "# My Project" > README.md
+```
+
+**Passo 2: Veja o que o Git enxerga**
+```bash
+git status
+# README.md aparece como "Untracked"
+```
+
+**Passo 3: Coloque o arquivo em staging**
+```bash
+git add README.md
+
+# Colocar TODOS os arquivos modificados de uma vez
+git add .
+```
+
+**Passo 4: Faça o commit com uma mensagem**
+```bash
+git commit -m "Add README file"
+```
+
+---
+
+## Escrevendo boas mensagens de commit
+
+Uma boa mensagem de commit diz **o que mudou e por quê**, não como.
+
+::: columns
+::: {.column width="50%"}
+**❌ Mensagens ruins**
+
+- `fix`
+- `stuff`
+- `changes`
+- `asdfgh`
+- `final`
+- `final for real`
+:::
+
+::: {.column width="50%"}
+**✅ Mensagens boas**
+
+- `Add login form validation`
+- `Fix crash when user list is empty`
+- `Remove deprecated API calls`
+- `Update README with install steps`
+:::
+:::
+
+::: {.callout-tip}
+Use o modo imperativo: "Add feature" em vez de "Added feature".
+:::
+
+---
+
+## 6. Vendo o histórico
+
+**Ver todos os commits:**
+```bash
+git log
+```
+
+**Visão compacta de uma linha (bem mais agradável):**
+```bash
+git log --oneline
+# a3f1c2d Add login form
+# 9b2e81a Fix crash on empty list
+# 4c7a012 Initial commit
+```
+
+**Ver o que realmente mudou em cada commit:**
+```bash
+git log --oneline --stat
+```
+
+**Ver mudanças que ainda não estão em staging:**
+```bash
+git diff
+```
+
+**Ver mudanças já em staging:**
+```bash
+git diff --staged
+```
+
+---
+
+## 7. Desfazendo coisas
+
+**Tirar um arquivo do staging (mantendo suas edições):**
+```bash
+git restore --staged filename.py
+```
+
+**Descartar todas as edições de um arquivo (voltar ao último commit):**
+```bash
+git restore filename.py
+```
+
+::: {.callout-warning}
+`git restore filename.py` descarta permanentemente as mudanças não salvas. Não há como desfazer.
+:::
+
+**Desfazer o último commit (mantendo os arquivos intactos):**
+```bash
+git reset --soft HEAD~1
+```
+
+**Corrigir a mensagem do último commit:**
+```bash
+git commit --amend -m "Corrected commit message"
+```
+
+---
+
+## 8. Branches
+
+Um branch é uma **cópia independente** do seu projeto onde você pode trabalhar livremente sem afetar o código principal.
+
+```
+main   ──●──●──●──────────────●──▶
+                \            /
+feature         ●──●──●──●──
+```
+
+**Criar e mudar para um branch novo:**
+```bash
+git switch -c feature/login
+```
+
+**Listar todos os branches:**
+```bash
+git branch
+```
+
+**Alternar entre branches:**
+```bash
+git switch main
+git switch feature/login
+```
+
+**Deletar um branch (depois do merge):**
+```bash
+git branch -d feature/login
+```
+
+---
+
+## Fazendo merge de branches
+
+Quando sua feature estiver pronta, faça o merge dela de volta na `main`:
+
+```bash
+# 1. Mude para o branch de destino
+git switch main
+
+# 2. Faça o merge do branch feature nele
+git merge feature/login
+```
+
+**Se não houver conflitos**, o Git faz o merge automaticamente.
+
+**Se houver um conflito**, o Git marca o arquivo afetado:
+
+```
+<<<<<<< HEAD
+print("Hello from main")
+=======
+print("Hello from feature")
+>>>>>>> feature/login
+```
+
+Edite o arquivo para manter o que quiser, remova os marcadores, e então:
+
+```bash
+git add filename.py
+git commit -m "Merge feature/login into main"
+```
+
+---
+
+## 9. Trabalhando com remotes (GitHub / GitLab)
+
+**Adicionar um remote ao seu repo local:**
+```bash
+git remote add origin https://github.com/username/repo.git
+```
+
+**Conferir seus remotes:**
+```bash
+git remote -v
+```
+
+**Fazer push dos seus commits para o GitHub pela primeira vez:**
+```bash
+git push -u origin main
+```
+
+**Fazer push depois da primeira vez:**
+```bash
+git push
+```
+
+**Trazer as últimas mudanças do GitHub:**
+```bash
+git pull
+```
+
+---
+
+## Fluxo de trabalho diário típico
+
+```bash
+# 1. Traga as últimas mudanças dos colegas de equipe
+git pull
+
+# 2. Crie um branch para sua tarefa
+git switch -c feature/my-task
+
+# 3. Faça seu trabalho... edite arquivos...
+
+# 4. Veja o que mudou
+git status
+git diff
+
+# 5. Coloque em staging e faça commit
+git add .
+git commit -m "Implement my task"
+
+# 6. Faça push para o GitHub
+git push -u origin feature/my-task
+
+# 7. Abra um Pull Request no GitHub e peça revisão
+```
+
+---
+
+## 10. O arquivo `.gitignore`
+
+Diga ao Git para **ignorar arquivos que você nunca quer commitar** (segredos, logs, artefatos de build):
+
+```bash
+# Crie o arquivo na raiz do seu projeto
+nano .gitignore
+```
+
+Exemplo de `.gitignore` para um projeto Python:
+
+```
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Variáveis de ambiente (NUNCA commite estas!)
+.env
+
+# Arquivos do editor
+.vscode/
+.idea/
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+```
+
+```bash
+git add .gitignore
+git commit -m "Add .gitignore"
+```
+
+---
+
+## 11. Chaves SSH — chega de digitar senha
+
+Em vez de digitar sua senha a cada push, use uma chave SSH:
+
+**Passo 1: Gere um par de chaves**
+```bash
+ssh-keygen -t ed25519 -C "you@example.com"
+# Pressione Enter para aceitar os valores padrão
+```
+
+**Passo 2: Copie sua chave pública**
+```bash
+cat ~/.ssh/id_ed25519.pub
+# Copie toda a saída
+```
+
+**Passo 3: Adicione-a ao GitHub**
+
+GitHub → Settings → SSH and GPG keys → New SSH key → Paste → Save
+
+**Passo 4: Teste a conexão**
+```bash
+ssh -T git@github.com
+# Hi username! You've successfully authenticated.
+```
+
+**Passo 5: Use URLs SSH em vez de HTTPS**
+```bash
+git remote set-url origin git@github.com:username/repo.git
+```
+
+---
+
+## Cheatsheet de comandos essenciais
+
+| Comando | O que faz |
+|---------|-------------|
+| `git init` | Inicia um repo novo |
+| `git clone <url>` | Copia um repo remoto localmente |
+| `git status` | Mostra o estado atual |
+| `git add .` | Coloca todas as mudanças em staging |
+| `git commit -m "msg"` | Salva uma foto |
+| `git log --oneline` | Vê o histórico de commits |
+| `git push` | Envia para o remote |
+| `git pull` | Baixa do remote |
+| `git switch -c <name>` | Cria e muda de branch |
+| `git merge <branch>` | Faz merge de um branch |
+| `git restore <file>` | Descarta mudanças de um arquivo |
+| `git diff` | Mostra mudanças não salvas em staging |
+
+---
+
+## Erros comuns e como corrigi-los
+
+**"Fiz commit na main por acidente"**
+```bash
+git reset --soft HEAD~1      # Desfaz o commit, mantém as mudanças em staging
+git switch -c feature/oops   # Move o trabalho para um branch novo
+```
+
+**"Apaguei um arquivo por acidente"**
+```bash
+git restore deleted_file.py
+```
+
+**"Preciso ver como o projeto estava 3 commits atrás"**
+```bash
+git log --oneline            # Encontre o hash do commit
+git checkout a3f1c2d         # Dê uma olhada (somente leitura)
+git switch main              # Volte
+```
+
+**"Meu push foi rejeitado"**
+```bash
+git pull --rebase            # Traga primeiro as mudanças do remote
+git push                     # Agora faça push dos seus commits em cima
+```
+
+---
+
+## Resumo
+
+::: columns
+::: {.column width="50%"}
+**O fluxo de ouro**
+
+1. `git pull` — sincronize primeiro
+2. `git switch -c branch` — trabalhe isolado
+3. edite → `git add .` → `git commit`
+4. repita o passo 3
+5. `git push` — compartilhe seu trabalho
+6. abra um Pull Request
+:::
+
+::: {.column width="50%"}
+**As regras de ouro**
+
+- Faça commit **cedo e com frequência**
+- Escreva **mensagens com significado**
+- Nunca commite `.env` ou segredos
+- Trabalhe sempre em um **branch**
+- `git status` é seu melhor amigo
+:::
+:::
+
+::: {.callout-tip}
+A melhor forma de aprender Git é usá-lo todos os dias, mesmo em projetos pessoais. Quebre coisas, recupere-as — é assim que você realmente entende.
+:::
