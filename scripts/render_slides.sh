@@ -9,7 +9,10 @@ count=0
 
 while IFS= read -r -d '' qmd; do
   echo "==> Rendering ${qmd#"$REPO_ROOT"/}"
-  if quarto render "$qmd" --to revealjs; then
+  # --execute-daemon 0: force a fresh Jupyter kernel per deck. Rendering many
+  # decks back-to-back with the daemon's default kernel reuse (300s keepalive)
+  # has been observed to make an unrelated later deck fail intermittently.
+  if quarto render "$qmd" --to revealjs --execute-daemon 0; then
     count=$((count + 1))
   else
     echo "!! FAILED: $qmd" >&2

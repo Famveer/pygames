@@ -1,0 +1,10 @@
+<link rel="stylesheet" href="{{ '/assets/css/just-the-docs-light.css' | relative_url }}" id="jtd-light-css" disabled>
+<script>
+  (function () {
+    var STORAGE_KEY = "color-scheme";
+    var lightLink = document.getElementById("jtd-light-css");
+    if (localStorage.getItem(STORAGE_KEY) === "light") {
+      lightLink.disabled = false;
+    }
+  })();
+</script>

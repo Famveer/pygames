@@ -1,0 +1,28 @@
+{%- comment -%}
+  Local override of just-the-docs' components/sidebar.html.
+  Changes from the stock theme: the site logo/title link is dropped, and
+  {% include sidebar_controls.html %} (language switcher + dark/light
+  toggle) takes its place in the header row.
+{%- endcomment -%}
+
+<div class="side-bar">
+  <div class="site-header" role="banner">
+    {% include sidebar_controls.html %}
+    <button id="menu-button" class="site-button btn-reset" aria-label="Toggle menu" aria-pressed="false">
+      <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><use xlink:href="#svg-menu"></use></svg>
+    </button>
+  </div>
+
+  {% include_cached components/site_nav.html %}
+
+  {% capture nav_footer_custom %}
+    {%- include nav_footer_custom.html -%}
+  {% endcapture %}
+  {% if nav_footer_custom != "" %}
+    {{ nav_footer_custom }}
+  {% else %}
+    <footer class="site-footer">
+      This site uses <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.
+    </footer>
+  {% endif %}
+</div>

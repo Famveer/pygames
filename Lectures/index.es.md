@@ -5,6 +5,7 @@ permalink: /Lectures/
 title: Clases
 nav_order: 3
 layout: default
+has_toc: false
 ---
 
 # Clases

@@ -20,7 +20,7 @@ parallel_localization: true
 logo: "/assets/images/logo-famveer.png"
 favicon_ico: "/assets/images/favicon.ico"
 
-search_enabled: true
+search_enabled: false
 
 search:
   heading_level: 2

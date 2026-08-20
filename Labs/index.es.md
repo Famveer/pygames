@@ -5,6 +5,7 @@ permalink: /Labs/
 title: Laboratorios
 nav_order: 4
 layout: default
+has_toc: false
 ---
 
 # Laboratorios
